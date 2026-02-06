@@ -1,17 +1,16 @@
-import { useFruits } from '../hooks/useFruits.ts'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import Layout from './Layout'
+import Factions from './Factions'
+import ArmyBuilder from './ArmyBuilder'
 
 function App() {
-  const { data } = useFruits()
-
+  // Example: using "CL" faction for now
   return (
-    <>
-      <div className="app">
-        <h1 className="text-3xl font-bold underline">
-          Fullstack Boilerplate - with Fruits!
-        </h1>
-        <ul>{data && data.map((fruit) => <li key={fruit}>{fruit}</li>)}</ul>
-      </div>
-    </>
+    <div className="app">
+      <h1 className="text-3xl font-bold underline">Army Builder</h1>
+
+      <ArmyBuilder faction="CL" />
+    </div>
   )
 }
 
