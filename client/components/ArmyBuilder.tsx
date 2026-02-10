@@ -37,6 +37,14 @@ const SPECIALIST_WEAPONS: Record<string, { name: string; points: number }[]> = {
   ],
 }
 
+const hasRule = (unit: Unit, rule: string) =>
+  unit.special_rules?.toLowerCase().includes(rule.toLowerCase())
+
+const isHacker = (unit: Unit) => hasRule(unit, 'hacker')
+const isDrone = (unit: Unit) => hasRule(unit, 'drone')
+
+const isSpecialistTeam = (unit: Unit) => unit.name.includes('Specialist Team')
+
 export default function ArmyBuilder({ faction }: { faction: string }) {
   const [units, setUnits] = useState<Unit[]>([])
   const [army, setArmy] = useState<Unit[]>([])
@@ -63,8 +71,20 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
   }, 0)
 
   const hqCount = army.filter((u) => u.category === 'HQ').length
-  const troopCount = army.filter((u) => u.category === 'Troop').length
+  const troopCount = army.filter(
+    (u) => u.category === 'Troop' && !isSpecialistTeam(u),
+  ).length
   const meetsMinimums = hqCount >= 1 && troopCount >= 2
+  const coreTroops = army.filter(
+    (u) => u.category === 'Troop' && !isSpecialistTeam(u),
+  ).length
+  const hackerCount = army.filter(isHacker).length
+
+  const specialistCount = army.filter(isSpecialistTeam).length
+
+  const maxSpecialists = coreTroops
+  const specialistsUnlocked = specialistCount < maxSpecialists
+  const droneOnline = hackerCount > 0
 
   useEffect(() => {
     async function fetchUnits() {
@@ -126,8 +146,13 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
                 </td>
                 <td className="border border-gray-400 p-1 text-center">
                   <button
+                    disabled={isSpecialistTeam(unit) && !specialistsUnlocked}
                     onClick={() => addUnit(unit)}
-                    className="rounded border px-2 hover:bg-gray-200"
+                    className={`rounded border px-2 ${
+                      isSpecialistTeam(unit) && !specialistsUnlocked
+                        ? 'cursor-not-allowed bg-gray-300 text-gray-500'
+                        : 'hover:bg-gray-200'
+                    }`}
                   >
                     +
                   </button>
@@ -151,6 +176,15 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
           </li>
           <li className={troopCount >= 2 ? 'text-green-600' : 'text-red-600'}>
             Troops: {troopCount}/2
+          </li>
+          <li
+            className={
+              specialistCount <= maxSpecialists
+                ? 'text-green-600'
+                : 'text-red-600'
+            }
+          >
+            Specialists: {specialistCount}/{maxSpecialists}
           </li>
         </ul>
 
