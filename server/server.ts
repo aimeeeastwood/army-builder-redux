@@ -1,21 +1,31 @@
-import express from 'express'
-import * as Path from 'node:path'
+import * as express from 'express'
+import * as cors from 'cors'
+import * as path from 'path'
+import { fileURLToPath } from 'url'
 
-import unitRoutes from './routes/units.ts' // <-- new import
+import armyRoutes from './routes/armyRoutes.js' // your own routes
 
-const server = express()
+// Fix __dirname in ES modules
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-server.use(express.json())
+const app = express()
 
-server.use('/api/v1/fruits', fruitRoutes)
-server.use('/api/v1/units', unitRoutes) // <-- new route
+// Middleware
+app.use(cors())
+app.use(express.json())
+app.use(express.static(path.join(__dirname, 'public')))
 
-if (process.env.NODE_ENV === 'production') {
-  server.use(express.static(Path.resolve('public')))
-  server.use('/assets', express.static(Path.resolve('./dist/assets')))
-  server.get('*', (req, res) => {
-    res.sendFile(Path.resolve('./dist/index.html'))
-  })
-}
+// Routes
+app.use('/army', armyRoutes)
 
-export default server
+// Optional: serve static files
+// app.use(express.static(path.join(__dirname, "public")))
+app.get('/', (req, res) => {
+  res.send('Army Builder API is running!')
+})
+
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
