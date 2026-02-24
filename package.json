@@ -35,7 +35,6 @@
     "jsonwebtoken": "^9.0.2",
     "jwks-rsa": "^2.1.5",
     "knex": "^2.5.1",
-    "next": "^16.1.6",
     "react-router-dom": "^7.13.0",
     "sqlite3": "^5.1.6",
     "superagent": "^10.2.2"

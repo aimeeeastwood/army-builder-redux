@@ -1,16 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ES2020",                   // modern JS
-    "module": "ESNext",                    // needed for import.meta.url
-    "moduleResolution": "node",
-    "esModuleInterop": true,               // allows default imports from CJS modules
+    "target": "ES2020",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "strict": true,                        // strict type checking
-    "skipLibCheck": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    "types": ["node"]                      // fixes process, path, url, etc.
+    "skipLibCheck": true
   },
-  "include": ["server/**/*.ts", "server/routes/armyRoutes.js", "server/routes/armyRoutes.js"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["client", "server"]
 }
