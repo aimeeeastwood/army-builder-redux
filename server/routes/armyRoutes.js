@@ -1,10 +1,9 @@
 const express = require('express')
-const { ALL_UNITS } = require('../../client/apis/units')
-
 const router = express.Router()
 
+// Example endpoint
 router.get('/', (req, res) => {
-  res.json(ALL_UNITS)
+  res.json({ message: 'Army list endpoint working!' })
 })
 
 module.exports = router

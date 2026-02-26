@@ -1,25 +1,21 @@
 // server/server.ts
-import express = require('express')
-import cors = require('cors')
-import path = require('path')
-
-// Import your routes (still using CommonJS style)
-const armyRoutes = require('./routes/armyRoutes').default
+const express = require('express')
+const cors = require('cors')
+const path = require('path')
+const armyRoutes = require('./routes/armyRoutes')
 
 const app = express()
-const PORT = 3000
 
-// Middleware
 app.use(cors())
 app.use(express.json())
 
-// Routes
+// Your API routes
 app.use('/army', armyRoutes)
 
-// Serve static files if needed (optional)
-app.use(express.static(path.join(__dirname, 'public')))
+// Example: serve static files if needed
+// app.use(express.static(path.join(__dirname, 'public')))
 
-// Start server
+const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`)
 })

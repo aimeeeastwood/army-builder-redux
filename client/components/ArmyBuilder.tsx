@@ -1,3 +1,4 @@
+import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
@@ -18,7 +19,6 @@ interface Unit {
   F?: number
   S?: number
   R?: number
-  equipment?: string
   special_rules?: string
 }
 
@@ -41,28 +41,41 @@ const hasRule = (unit: Unit, rule: string) =>
   unit.special_rules?.toLowerCase().includes(rule.toLowerCase())
 
 const isHacker = (unit: Unit) => hasRule(unit, 'hacker')
-const isDrone = (unit: Unit) => hasRule(unit, 'drone')
-
 const isSpecialistTeam = (unit: Unit) => unit.name.includes('Specialist Team')
 
-export default function ArmyBuilder({ faction }: { faction: string }) {
+export default function ArmyBuilder() {
+  const { faction } = useParams<{ faction: string }>()
+
+  if (!faction) return <p>No faction selected.</p>
+
   const [units, setUnits] = useState<Unit[]>([])
   const [army, setArmy] = useState<Unit[]>([])
   const [specialistSelection, setSpecialistSelection] = useState<
     Record<number, string>
   >({})
 
-  const addUnit = (unit: Unit) => {
-    setArmy((prev) => [...prev, unit])
-  }
+  // fetch units based on faction
+  useEffect(() => {
+    async function fetchUnits() {
+      try {
+        const res = await fetch(`/api/units?faction=${faction}`)
+        const data = await res.json()
+        setUnits(data)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+    fetchUnits()
+  }, [faction])
 
-  const removeUnit = (index: number) => {
+  const addUnit = (unit: Unit) => setArmy((prev) => [...prev, unit])
+  const removeUnit = (index: number) =>
     setArmy((prev) => prev.filter((_, i) => i !== index))
-  }
 
+  // Army stats
   const totalPoints = army.reduce((sum, u, i) => {
     const specialPoints =
-      u.name.includes('Specialist Team') && specialistSelection[i]
+      isSpecialistTeam(u) && specialistSelection[i]
         ? SPECIALIST_WEAPONS[faction].find(
             (w) => w.name === specialistSelection[i],
           )?.points || 0
@@ -74,30 +87,12 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
   const troopCount = army.filter(
     (u) => u.category === 'Troop' && !isSpecialistTeam(u),
   ).length
-  const meetsMinimums = hqCount >= 1 && troopCount >= 2
-  const coreTroops = army.filter(
-    (u) => u.category === 'Troop' && !isSpecialistTeam(u),
-  ).length
-  const hackerCount = army.filter(isHacker).length
-
   const specialistCount = army.filter(isSpecialistTeam).length
-
+  const coreTroops = troopCount
   const maxSpecialists = coreTroops
   const specialistsUnlocked = specialistCount < maxSpecialists
-  const droneOnline = hackerCount > 0
 
-  useEffect(() => {
-    async function fetchUnits() {
-      try {
-        const res = await fetch(`/api/v1/units?faction=${faction}`)
-        const data = await res.json()
-        setUnits(data)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchUnits()
-  }, [faction])
+  const meetsMinimums = hqCount >= 1 && troopCount >= 2
 
   return (
     <div className="army-builder p-4">
@@ -109,42 +104,41 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
         <table className="w-full table-auto border-collapse border border-gray-400">
           <thead>
             <tr className="bg-gray-200">
-              <th className="border border-gray-400 p-1">Name</th>
-              <th className="border border-gray-400 p-1">Category</th>
-              <th className="border border-gray-400 p-1">Points</th>
-              <th className="border border-gray-400 p-1">CC</th>
-              <th className="border border-gray-400 p-1">BS</th>
-              <th className="border border-gray-400 p-1">DE</th>
-              <th className="border border-gray-400 p-1">FW</th>
-              <th className="border border-gray-400 p-1">W / STR</th>
-              <th className="border border-gray-400 p-1">WIP</th>
-              <th className="border border-gray-400 p-1">MOV</th>
-              <th className="border border-gray-400 p-1">F/S/R (Vehicles)</th>
-              <th className="border border-gray-400 p-1">Add</th>
+              <th className="border p-1">Name</th>
+              <th className="border p-1">Category</th>
+              <th className="border p-1">Points</th>
+              <th className="border p-1">CC</th>
+              <th className="border p-1">BS</th>
+              <th className="border p-1">DE</th>
+              <th className="border p-1">FW</th>
+              <th className="border p-1">W / STR</th>
+              <th className="border p-1">WIP</th>
+              <th className="border p-1">MOV</th>
+              <th className="border p-1">F/S/R (Vehicles)</th>
+              <th className="border p-1">Add</th>
             </tr>
           </thead>
-
           <tbody>
-            {units.map((unit) => (
+            {units.map((unit, i) => (
               <tr key={unit.id} className="hover:bg-gray-100">
-                <td className="border border-gray-400 p-1">{unit.name}</td>
-                <td className="border border-gray-400 p-1">{unit.category}</td>
-                <td className="border border-gray-400 p-1">{unit.points}</td>
-                <td className="border border-gray-400 p-1">{unit.CC}</td>
-                <td className="border border-gray-400 p-1">{unit.BS}</td>
-                <td className="border border-gray-400 p-1">{unit.DE}</td>
-                <td className="border border-gray-400 p-1">{unit.FW}</td>
-                <td className="border border-gray-400 p-1">
+                <td className="border p-1">{unit.name}</td>
+                <td className="border p-1">{unit.category}</td>
+                <td className="border p-1">{unit.points}</td>
+                <td className="border p-1">{unit.CC}</td>
+                <td className="border p-1">{unit.BS}</td>
+                <td className="border p-1">{unit.DE}</td>
+                <td className="border p-1">{unit.FW}</td>
+                <td className="border p-1">
                   {unit.category === 'Vehicle' ? unit.STR : unit.W}
                 </td>
-                <td className="border border-gray-400 p-1">{unit.WIP}</td>
-                <td className="border border-gray-400 p-1">{unit.MOV}</td>
-                <td className="border border-gray-400 p-1">
+                <td className="border p-1">{unit.WIP}</td>
+                <td className="border p-1">{unit.MOV}</td>
+                <td className="border p-1">
                   {unit.category === 'Vehicle'
                     ? `${unit.F}/${unit.S}/${unit.R}`
                     : '-'}
                 </td>
-                <td className="border border-gray-400 p-1 text-center">
+                <td className="border p-1 text-center">
                   <button
                     disabled={isSpecialistTeam(unit) && !specialistsUnlocked}
                     onClick={() => addUnit(unit)}
@@ -163,13 +157,11 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
         </table>
       )}
 
-      {/* 🔻 Army composition & points */}
+      {/* Army summary */}
       <div className="mt-6">
         <h3 className="mb-2 text-xl font-bold">
           Current Army ({totalPoints} pts)
         </h3>
-
-        {/* Minimum requirements */}
         <ul className="mb-2 text-sm">
           <li className={hqCount >= 1 ? 'text-green-600' : 'text-red-600'}>
             HQ: {hqCount}/1
@@ -200,19 +192,13 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
                 <div className="flex items-center space-x-2">
                   <span>
                     {unit.name} ({unit.points}
-                    {unit.name.includes('Specialist Team') &&
-                    specialistSelection[index]
-                      ? ` + ${
-                          SPECIALIST_WEAPONS[faction].find(
-                            (w) => w.name === specialistSelection[index],
-                          )?.points || 0
-                        }`
+                    {isSpecialistTeam(unit) && specialistSelection[index]
+                      ? ` + ${SPECIALIST_WEAPONS[faction].find((w) => w.name === specialistSelection[index])?.points || 0}`
                       : ''}
                     )
                   </span>
 
-                  {/* Specialist weapon dropdown */}
-                  {unit.name.includes('Specialist Team') && (
+                  {isSpecialistTeam(unit) && (
                     <select
                       value={specialistSelection[index] || ''}
                       onChange={(e) =>
@@ -232,7 +218,6 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
                     </select>
                   )}
                 </div>
-
                 <button
                   onClick={() => removeUnit(index)}
                   className="rounded border px-2"
@@ -244,7 +229,6 @@ export default function ArmyBuilder({ faction }: { faction: string }) {
           </ul>
         )}
 
-        {/* Army requirements warning */}
         {!meetsMinimums && (
           <div className="mt-3 text-sm text-red-600">
             <p>Army requirements not met:</p>
