@@ -1,5 +1,6 @@
 import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { ALL_UNITS_FULL } from '../apis/units'
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
 
@@ -54,18 +55,10 @@ export default function ArmyBuilder() {
     Record<number, string>
   >({})
 
-  // fetch units based on faction
   useEffect(() => {
-    async function fetchUnits() {
-      try {
-        const res = await fetch(`/api/units?faction=${faction}`)
-        const data = await res.json()
-        setUnits(data)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchUnits()
+    const factionUnits = ALL_UNITS_FULL.filter((u) => u.faction === faction)
+
+    setUnits(factionUnits)
   }, [faction])
 
   const addUnit = (unit: Unit) => setArmy((prev) => [...prev, unit])
