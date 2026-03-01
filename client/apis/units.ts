@@ -7,7 +7,7 @@ export interface UnitOption {
   name: string
   cost?: number // optional cost per model for the option
   description?: string
-  points?: number // optional total points for this option
+  points: number // optional total points for this option
 }
 
 export interface UnitTemplate {
@@ -32,7 +32,7 @@ export interface UnitTemplate {
   S?: number // for vehicles
   R?: number // for vehicles
   options?: UnitOption[]
-
+  availableOptions?: UnitOption[]
   /** total points is computed dynamically */
   points?: number
 }
@@ -55,7 +55,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 5,
     costPerModel: 10,
-    options: [
+    availableOptions: [
       { name: 'FAC', points: 50 },
       { name: 'Medic', points: 2 },
       { name: 'Hacker', points: 2 },
@@ -80,7 +80,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 10,
     costPerModel: 8,
-    options: [
+    availableOptions: [
       { name: 'LMG', points: 3 },
       { name: 'Medic', points: 2 },
       { name: 'Hacker', points: 2 },
@@ -103,7 +103,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     baseSize: 3,
     maxSize: 3,
     costPerModel: 8,
-    options: [
+    availableOptions: [
       { name: 'HMG', points: 4 },
       { name: 'Benling', points: 6 },
       { name: 'Guided Mortar', points: 5 },
@@ -129,7 +129,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 10,
     costPerModel: 10,
-    options: [{ name: 'Swap Shotguns for SMGs', points: 0 }],
+    availableOptions: [{ name: 'Swap Shotguns for SMGs', points: 0 }],
     CC: 4,
     BS: 4,
     DE: 3,
@@ -292,7 +292,7 @@ export const CL_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 5,
     costPerModel: 9,
-    options: [
+    availableOptions: [
       { name: 'Spotter', points: 50 },
       { name: 'Priest', points: 2 },
       { name: 'Hacker', points: 2 },
@@ -317,7 +317,7 @@ export const CL_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 10,
     costPerModel: 7,
-    options: [
+    availableOptions: [
       { name: 'LMG', points: 3 },
       { name: 'Priest', points: 2 },
     ],
@@ -339,7 +339,7 @@ export const CL_UNITS: UnitTemplate[] = [
     baseSize: 3,
     maxSize: 3,
     costPerModel: 8,
-    options: [
+    availableOptions: [
       { name: 'HMG', points: 4 },
       { name: 'RPG', points: 5 },
       { name: 'Rocket Mortar', points: 5 },
@@ -365,7 +365,7 @@ export const CL_UNITS: UnitTemplate[] = [
     baseSize: 5,
     maxSize: 15,
     costPerModel: 12,
-    options: [{ name: 'Flamethrower', points: 3 }],
+    availableOptions: [{ name: 'Flamethrower', points: 3 }],
     CC: 4,
     BS: 4,
     DE: 1,
