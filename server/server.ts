@@ -1,5 +1,5 @@
 // server/server.ts
-const express = require('express')
+import * as express from 'express'
 const cors = require('cors')
 const path = require('path')
 const armyRoutes = require('./routes/armyRoutes')

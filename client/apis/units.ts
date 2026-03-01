@@ -2,46 +2,53 @@
 export type Faction = 'CL' | 'OFN'
 export type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Drone' | 'Vehicle'
 
-export interface UnitTemplate {
-  id: number
+export interface UnitOption {
+  id?: string
   name: string
-  faction: Faction
-  category: UnitCategory
+  cost?: number // optional cost per model for the option
+  description?: string
+  points?: number // optional total points for this option
+}
 
-  // Squad-only
-  baseSize?: number
-  maxSize?: number
-  costPerModel?: number
-
-  // Vehicle-only
-  points?: number
-  F?: number
-  S?: number
-  R?: number
-
-  // Shared
+export interface UnitTemplate {
+  id: string
+  name: string
+  faction: string
+  category: 'HQ' | 'Troop' | 'Elite' | 'Drone' | 'Vehicle'
+  baseSize?: number // optional
+  maxSize?: number // optional
+  costPerModel?: number // optional
   CC: number
   BS: number
-  DE?: number
+  DE: number
   FW: number
-  W?: number
-  STR?: number
+  W: number
   WIP: number
   MOV: string
+  equipment: string
+  special_rules: string
+  STR?: number // for vehicles
+  F?: number // for vehicles
+  S?: number // for vehicles
+  R?: number // for vehicles
+  options?: UnitOption[]
 
-  options?: {
-    name: string
-    points: number
-  }[]
+  /** total points is computed dynamically */
+  points?: number
+}
 
-  special_rules?: string
+export const calculateUnitPoints = (unit: UnitTemplate): number => {
+  const basePoints = (unit.baseSize ?? 0) * (unit.costPerModel ?? 0)
+  const optionsPoints =
+    unit.options?.reduce((sum, opt) => sum + (opt.points ?? 0), 0) ?? 0
+  return basePoints + optionsPoints
 }
 
 // ---------------- OFN Squads & Elites & Drones ----------------
 export const OFN_UNITS: UnitTemplate[] = [
   // HQ
   {
-    id: 101,
+    id: '101',
     name: 'Marine Command Squad',
     faction: 'OFN',
     category: 'HQ',
@@ -66,7 +73,7 @@ export const OFN_UNITS: UnitTemplate[] = [
 
   // Troop
   {
-    id: 102,
+    id: '102',
     name: 'Marine Rifle Squad',
     faction: 'OFN',
     category: 'Troop',
@@ -74,9 +81,9 @@ export const OFN_UNITS: UnitTemplate[] = [
     maxSize: 10,
     costPerModel: 8,
     options: [
-      { name: 'LMG', points: 10 },
-      { name: 'Medic', points: 12 },
-      { name: 'Hacker', points: 15 },
+      { name: 'LMG', points: 3 },
+      { name: 'Medic', points: 2 },
+      { name: 'Hacker', points: 2 },
     ],
     CC: 3,
     BS: 4,
@@ -89,7 +96,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Navy',
   },
   {
-    id: 103,
+    id: '103',
     name: 'Marine Specialist Team',
     faction: 'OFN',
     category: 'Troop',
@@ -115,7 +122,7 @@ export const OFN_UNITS: UnitTemplate[] = [
 
   // Elite
   {
-    id: 104,
+    id: '104',
     name: 'Marine Airborne Team',
     faction: 'OFN',
     category: 'Elite',
@@ -134,7 +141,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Navy, Airbourne, Flurry Of Blades (2)',
   },
   {
-    id: 105,
+    id: '105',
     name: 'Exo-Marine Squad',
     faction: 'OFN',
     category: 'Elite',
@@ -152,7 +159,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Navy, Hackable',
   },
   {
-    id: 106,
+    id: '106',
     name: 'Envoy Ranger Squad',
     faction: 'OFN',
     category: 'Elite',
@@ -174,7 +181,7 @@ export const OFN_UNITS: UnitTemplate[] = [
 
   // Drones
   {
-    id: 110,
+    id: '110',
     name: 'Trilobite Scout Drone',
     faction: 'OFN',
     category: 'Drone',
@@ -192,7 +199,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     special_rules: 'Drone, Fly, Hackable',
   },
   {
-    id: 111,
+    id: '111',
     name: 'Barracuda Attack Drone',
     faction: 'OFN',
     category: 'Drone',
@@ -210,7 +217,7 @@ export const OFN_UNITS: UnitTemplate[] = [
     special_rules: 'Drone, Fly, Hackable',
   },
   {
-    id: 112,
+    id: '112',
     name: 'Vanguard Infantry Drone',
     faction: 'OFN',
     category: 'Drone',
@@ -232,7 +239,7 @@ export const OFN_UNITS: UnitTemplate[] = [
 // ---------------- OFN Vehicles ----------------
 export const OFN_VEHICLES: UnitTemplate[] = [
   {
-    id: 201,
+    id: '201',
     name: 'Carrowary Light Support Mech',
     faction: 'OFN',
     category: 'Vehicle',
@@ -253,7 +260,7 @@ export const OFN_VEHICLES: UnitTemplate[] = [
     R: 10,
   },
   {
-    id: 202,
+    id: '202',
     name: 'Stingray Mech Destroyer',
     faction: 'OFN',
     category: 'Vehicle',
@@ -278,7 +285,7 @@ export const OFN_VEHICLES: UnitTemplate[] = [
 export const CL_UNITS: UnitTemplate[] = [
   // HQ
   {
-    id: 301,
+    id: '301',
     name: 'Crusader Clergy Squad',
     faction: 'CL',
     category: 'HQ',
@@ -303,7 +310,7 @@ export const CL_UNITS: UnitTemplate[] = [
 
   // Troops
   {
-    id: 302,
+    id: '302',
     name: 'Crusader Rifle Squad',
     faction: 'CL',
     category: 'Troop',
@@ -325,7 +332,7 @@ export const CL_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Fanatic',
   },
   {
-    id: 303,
+    id: '303',
     name: 'Crusader Specialist Team',
     faction: 'CL',
     category: 'Troop',
@@ -351,7 +358,7 @@ export const CL_UNITS: UnitTemplate[] = [
 
   // Elite
   {
-    id: 304,
+    id: '304',
     name: 'Crusader Zealot Squad',
     faction: 'CL',
     category: 'Elite',
@@ -370,7 +377,7 @@ export const CL_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Fanatic, Zealot, Ambusher',
   },
   {
-    id: 305,
+    id: '305',
     name: 'Enhanced Crusader Squad',
     faction: 'CL',
     category: 'Elite',
@@ -388,7 +395,7 @@ export const CL_UNITS: UnitTemplate[] = [
     special_rules: 'Infantry, Fanatic, Zealot, Hackable, Flurry Of Blades (2)',
   },
   {
-    id: 306,
+    id: '306',
     name: 'Crusader Assassin Squad',
     faction: 'CL',
     category: 'Elite',
@@ -409,7 +416,7 @@ export const CL_UNITS: UnitTemplate[] = [
 
   // Drones
   {
-    id: 307,
+    id: '307',
     name: 'Tarantula Drone Squad',
     faction: 'CL',
     category: 'Drone',
@@ -427,7 +434,7 @@ export const CL_UNITS: UnitTemplate[] = [
     special_rules: 'Drone, Infiltrators, Ambushers, Hackable',
   },
   {
-    id: 308,
+    id: '308',
     name: 'Locust Drone Squad',
     faction: 'CL',
     category: 'Drone',
@@ -445,7 +452,7 @@ export const CL_UNITS: UnitTemplate[] = [
     special_rules: 'Drone, Fly, Hackable',
   },
   {
-    id: 309,
+    id: '309',
     name: 'Berserker Drone Squad',
     faction: 'CL',
     category: 'Drone',
@@ -467,7 +474,7 @@ export const CL_UNITS: UnitTemplate[] = [
 // ---------------- CL Vehicles ----------------
 export const CL_VEHICLES: UnitTemplate[] = [
   {
-    id: 401,
+    id: '401',
     name: 'Ezekiel Light Mech',
     faction: 'CL',
     category: 'Vehicle',
@@ -487,7 +494,7 @@ export const CL_VEHICLES: UnitTemplate[] = [
     R: 10,
   },
   {
-    id: 402,
+    id: '402',
     name: 'Goliath Heavy Mech',
     faction: 'CL',
     category: 'Vehicle',
@@ -507,3 +514,5 @@ export const CL_VEHICLES: UnitTemplate[] = [
     R: 12,
   },
 ]
+
+OFN_UNITS.forEach((unit) => (unit.points = calculateUnitPoints(unit)))

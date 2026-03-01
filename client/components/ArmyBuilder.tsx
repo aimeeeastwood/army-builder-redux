@@ -1,27 +1,15 @@
 import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { ALL_UNITS_FULL } from '../apis/units'
+import {
+  OFN_UNITS,
+  OFN_VEHICLES,
+  CL_UNITS,
+  CL_VEHICLES,
+  type UnitTemplate,
+  calculateUnitPoints,
+} from '../apis/units'
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
-
-interface Unit {
-  id: number
-  name: string
-  category: UnitCategory
-  points: number
-  CC: number
-  BS: number
-  DE: number
-  FW: number
-  W?: number
-  STR?: number
-  WIP: number
-  MOV: string
-  F?: number
-  S?: number
-  R?: number
-  special_rules?: string
-}
 
 const SPECIALIST_WEAPONS: Record<string, { name: string; points: number }[]> = {
   CL: [
@@ -38,42 +26,58 @@ const SPECIALIST_WEAPONS: Record<string, { name: string; points: number }[]> = {
   ],
 }
 
-const hasRule = (unit: Unit, rule: string) =>
+const hasRule = (unit: UnitTemplate, rule: string) =>
   unit.special_rules?.toLowerCase().includes(rule.toLowerCase())
 
-const isHacker = (unit: Unit) => hasRule(unit, 'hacker')
-const isSpecialistTeam = (unit: Unit) => unit.name.includes('Specialist Team')
+const isSpecialistTeam = (unit: UnitTemplate) =>
+  unit.name.includes('Specialist Team')
 
 export default function ArmyBuilder() {
   const { faction } = useParams<{ faction: string }>()
 
   if (!faction) return <p>No faction selected.</p>
 
-  const [units, setUnits] = useState<Unit[]>([])
-  const [army, setArmy] = useState<Unit[]>([])
+  const factionKey = faction as 'OFN' | 'CL'
+
+  const [units, setUnits] = useState<UnitTemplate[]>([])
+  const [army, setArmy] = useState<UnitTemplate[]>([])
   const [specialistSelection, setSpecialistSelection] = useState<
     Record<number, string>
   >({})
 
   useEffect(() => {
-    const factionUnits = ALL_UNITS_FULL.filter((u) => u.faction === faction)
-
-    setUnits(factionUnits)
+    if (faction === 'OFN') {
+      setUnits([...OFN_UNITS, ...OFN_VEHICLES])
+    } else if (faction === 'CL') {
+      setUnits([...CL_UNITS, ...CL_VEHICLES])
+    } else {
+      setUnits([])
+    }
   }, [faction])
 
-  const addUnit = (unit: Unit) => setArmy((prev) => [...prev, unit])
-  const removeUnit = (index: number) =>
+  const addUnit = (unit: UnitTemplate) => {
+    setArmy((prev) => [...prev, unit])
+  }
+
+  const removeUnit = (index: number) => {
     setArmy((prev) => prev.filter((_, i) => i !== index))
+    setSpecialistSelection((prev) => {
+      const updated = { ...prev }
+      delete updated[index]
+      return updated
+    })
+  }
 
   // Army stats
   const totalPoints = army.reduce((sum, u, i) => {
+    const basePoints = calculateUnitPoints(u)
     const specialPoints =
       isSpecialistTeam(u) && specialistSelection[i]
-        ? SPECIALIST_WEAPONS[faction].find(
+        ? SPECIALIST_WEAPONS[factionKey].find(
             (w) => w.name === specialistSelection[i],
           )?.points || 0
         : 0
-    return sum + u.points + specialPoints
+    return sum + basePoints + specialPoints
   }, 0)
 
   const hqCount = army.filter((u) => u.category === 'HQ').length
@@ -112,40 +116,43 @@ export default function ArmyBuilder() {
             </tr>
           </thead>
           <tbody>
-            {units.map((unit, i) => (
-              <tr key={unit.id} className="hover:bg-gray-100">
-                <td className="border p-1">{unit.name}</td>
-                <td className="border p-1">{unit.category}</td>
-                <td className="border p-1">{unit.points}</td>
-                <td className="border p-1">{unit.CC}</td>
-                <td className="border p-1">{unit.BS}</td>
-                <td className="border p-1">{unit.DE}</td>
-                <td className="border p-1">{unit.FW}</td>
-                <td className="border p-1">
-                  {unit.category === 'Vehicle' ? unit.STR : unit.W}
-                </td>
-                <td className="border p-1">{unit.WIP}</td>
-                <td className="border p-1">{unit.MOV}</td>
-                <td className="border p-1">
-                  {unit.category === 'Vehicle'
-                    ? `${unit.F}/${unit.S}/${unit.R}`
-                    : '-'}
-                </td>
-                <td className="border p-1 text-center">
-                  <button
-                    disabled={isSpecialistTeam(unit) && !specialistsUnlocked}
-                    onClick={() => addUnit(unit)}
-                    className={`rounded border px-2 ${
-                      isSpecialistTeam(unit) && !specialistsUnlocked
-                        ? 'cursor-not-allowed bg-gray-300 text-gray-500'
-                        : 'hover:bg-gray-200'
-                    }`}
-                  >
-                    +
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {units.map((unit, i) => {
+              const points = calculateUnitPoints(unit)
+              return (
+                <tr key={unit.id} className="hover:bg-gray-100">
+                  <td className="border p-1">{unit.name}</td>
+                  <td className="border p-1">{unit.category}</td>
+                  <td className="border p-1">{points}</td>
+                  <td className="border p-1">{unit.CC}</td>
+                  <td className="border p-1">{unit.BS}</td>
+                  <td className="border p-1">{unit.DE}</td>
+                  <td className="border p-1">{unit.FW}</td>
+                  <td className="border p-1">
+                    {unit.category === 'Vehicle' ? unit.STR : unit.W}
+                  </td>
+                  <td className="border p-1">{unit.WIP}</td>
+                  <td className="border p-1">{unit.MOV}</td>
+                  <td className="border p-1">
+                    {unit.category === 'Vehicle'
+                      ? `${unit.F}/${unit.S}/${unit.R}`
+                      : '-'}
+                  </td>
+                  <td className="border p-1 text-center">
+                    <button
+                      disabled={isSpecialistTeam(unit) && !specialistsUnlocked}
+                      onClick={() => addUnit(unit)}
+                      className={`rounded border px-2 ${
+                        isSpecialistTeam(unit) && !specialistsUnlocked
+                          ? 'cursor-not-allowed bg-gray-300 text-gray-500'
+                          : 'hover:bg-gray-200'
+                      }`}
+                    >
+                      +
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       )}
@@ -177,48 +184,55 @@ export default function ArmyBuilder() {
           <p>No units selected.</p>
         ) : (
           <ul className="space-y-1">
-            {army.map((unit, index) => (
-              <li
-                key={`${unit.id}-${index}`}
-                className="flex flex-col items-start justify-between space-y-1 md:flex-row md:items-center md:space-y-0"
-              >
-                <div className="flex items-center space-x-2">
-                  <span>
-                    {unit.name} ({unit.points}
-                    {isSpecialistTeam(unit) && specialistSelection[index]
-                      ? ` + ${SPECIALIST_WEAPONS[faction].find((w) => w.name === specialistSelection[index])?.points || 0}`
-                      : ''}
-                    )
-                  </span>
+            {army.map((unit, index) => {
+              const basePoints = calculateUnitPoints(unit)
+              const specialPoints =
+                isSpecialistTeam(unit) && specialistSelection[index]
+                  ? SPECIALIST_WEAPONS[faction].find(
+                      (w) => w.name === specialistSelection[index],
+                    )?.points || 0
+                  : 0
 
-                  {isSpecialistTeam(unit) && (
-                    <select
-                      value={specialistSelection[index] || ''}
-                      onChange={(e) =>
-                        setSpecialistSelection((prev) => ({
-                          ...prev,
-                          [index]: e.target.value,
-                        }))
-                      }
-                      className="rounded border px-1 text-sm"
-                    >
-                      <option value="">-- Weapon --</option>
-                      {SPECIALIST_WEAPONS[faction].map((w) => (
-                        <option key={w.name} value={w.name}>
-                          {w.name} (+{w.points})
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-                <button
-                  onClick={() => removeUnit(index)}
-                  className="rounded border px-2"
+              return (
+                <li
+                  key={`${unit.id}-${index}`}
+                  className="flex flex-col items-start justify-between space-y-1 md:flex-row md:items-center md:space-y-0"
                 >
-                  −
-                </button>
-              </li>
-            ))}
+                  <div className="flex items-center space-x-2">
+                    <span>
+                      {unit.name} ({basePoints}
+                      {specialPoints ? ` + ${specialPoints}` : ''})
+                    </span>
+
+                    {isSpecialistTeam(unit) && (
+                      <select
+                        value={specialistSelection[index] || ''}
+                        onChange={(e) =>
+                          setSpecialistSelection((prev) => ({
+                            ...prev,
+                            [index]: e.target.value,
+                          }))
+                        }
+                        className="rounded border px-1 text-sm"
+                      >
+                        <option value="">-- Weapon --</option>
+                        {SPECIALIST_WEAPONS[faction].map((w) => (
+                          <option key={w.name} value={w.name}>
+                            {w.name} (+{w.points})
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => removeUnit(index)}
+                    className="rounded border px-2"
+                  >
+                    −
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         )}
 
