@@ -142,7 +142,9 @@ export default function ArmyBuilder() {
       doc.text(`Category: ${u.category}`, 12, y)
       y += 5
       doc.text(
-        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${u.category === 'Vehicle' ? u.STR : u.W}, WIP: ${u.WIP}, MOV: ${u.MOV}`,
+        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${
+          u.category === 'Vehicle' ? u.STR : u.W
+        }, WIP: ${u.WIP}, MOV: ${u.MOV}`,
         12,
         y,
       )
@@ -180,9 +182,9 @@ export default function ArmyBuilder() {
 
   return (
     <div className="h-screen bg-zinc-900 text-zinc-100">
-      <div className="grid h-full grid-cols-[1fr_420px]">
+      <div className="grid h-full grid-cols-[1fr_2fr]">
         {/* LEFT PANEL */}
-        <div className="overflow-y-auto p-8">
+        <div className="overflow-y-auto border-r border-zinc-800 p-6">
           <h2 className="mb-6 text-2xl font-bold">{faction} Army</h2>
           {units.length === 0 ? (
             <p>No units found.</p>
@@ -226,20 +228,13 @@ export default function ArmyBuilder() {
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="flex flex-col border-l border-zinc-800 bg-zinc-950">
-          <div className="flex items-center justify-between border-b border-zinc-800 p-6">
+        <div className="flex flex-col bg-zinc-950">
+          <div className="border-b border-zinc-800 p-6">
             <h3 className="text-lg font-semibold">
               Army Preview ({totalPoints} pts)
             </h3>
-            <button
-              onClick={exportPDF}
-              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Export Army to PDF
-            </button>
           </div>
 
-          {/* Selected Units List */}
           <div className="flex-1 overflow-y-auto p-6">
             {sortedArmy.length === 0 ? (
               <p>No units selected.</p>
@@ -282,12 +277,12 @@ export default function ArmyBuilder() {
                           −
                         </button>
                       </div>
+
                       <div className="mt-1 space-y-1 text-sm">
                         <div>Category: {u.category}</div>
                         <div>
                           CC: {u.CC}, BS: {u.BS}, DE: {u.DE}, FW: {u.FW}, W/STR:{' '}
-                          {u.category === 'Vehicle' ? u.STR : u.W}, WIP: {u.WIP}
-                          , MOV: {u.MOV}
+                          {u.W}, WIP: {u.WIP}, MOV: {u.MOV}
                         </div>
                         {u.category === 'Vehicle' && (
                           <div>
@@ -379,12 +374,17 @@ export default function ArmyBuilder() {
             )}
           </div>
 
-          {/* Total Points & Export Button */}
           <div className="border-t border-zinc-800 p-6">
-            <div className="flex justify-between font-semibold">
+            <div className="mb-2 flex justify-between font-semibold">
               <span>Total Points</span>
               <span>{totalPoints} pts</span>
             </div>
+            <button
+              onClick={exportPDF}
+              className="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Export Army to PDF
+            </button>
           </div>
         </div>
       </div>

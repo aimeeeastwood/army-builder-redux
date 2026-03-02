@@ -37,13 +37,11 @@ export interface UnitTemplate {
   points?: number
 }
 
-export const calculateUnitPoints = (unit: UnitTemplate): number => {
-  const basePoints = (unit.baseSize ?? 0) * (unit.costPerModel ?? 0)
-  const optionsPoints =
-    unit.options?.reduce((sum, opt) => sum + (opt.points ?? 0), 0) ?? 0
-  return basePoints + optionsPoints
+export const calculateUnitPoints = (unit: UnitTemplate) => {
+  if (unit.category === 'Vehicle') return unit.points || 0
+  // for infantry / other units
+  return (unit.W || 0) + (unit.baseSize || 1) // adjust based on how you calculate infantry points
 }
-
 // ---------------- OFN Squads & Elites & Drones ----------------
 export const OFN_UNITS: UnitTemplate[] = [
   // HQ
