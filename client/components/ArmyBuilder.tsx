@@ -9,7 +9,6 @@ import {
   CL_VEHICLES,
   type UnitTemplate,
   type UnitOption,
-  calculateUnitPoints,
 } from '../apis/units'
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
@@ -45,6 +44,7 @@ export default function ArmyBuilder() {
   if (!faction) return <p>No faction selected.</p>
   const factionKey = faction as 'OFN' | 'CL'
 
+  // State
   const [units, setUnits] = useState<UnitTemplate[]>([])
   const [army, setArmy] = useState<UnitTemplate[]>([])
   const [specialistSelection, setSpecialistSelection] = useState<
@@ -56,47 +56,50 @@ export default function ArmyBuilder() {
   >({})
   const [pointsBudget, setPointsBudget] = useState<number>(1000)
 
+  // Load faction units on mount/change
   useEffect(() => {
-    if (faction === 'OFN') setUnits([...OFN_UNITS, ...OFN_VEHICLES])
-    else if (faction === 'CL') setUnits([...CL_UNITS, ...CL_VEHICLES])
+    if (factionKey === 'OFN') setUnits([...OFN_UNITS, ...OFN_VEHICLES])
+    else if (factionKey === 'CL') setUnits([...CL_UNITS, ...CL_VEHICLES])
     else setUnits([])
-  }, [faction])
+  }, [factionKey])
 
-  const sortedArmy = [...army].sort(
-    (a, b) =>
-      CATEGORY_ORDER.indexOf(a.category as UnitCategory) -
-      CATEGORY_ORDER.indexOf(b.category as UnitCategory),
-  )
-
-  // Calculate total points for a unit including options, extra models, and specialist weapons
-  const calculateTotalUnitPoints = (unit: UnitTemplate, index: number) => {
+  // Calculate total points for a single unit
+  const calculateUnitTotalPoints = (
+    unit: UnitTemplate,
+    index: number,
+  ): number => {
     const base = unit.points || 0
+
     const specialist =
       isSpecialistTeam(unit) && specialistSelection[index]
         ? SPECIALIST_WEAPONS[factionKey]?.find(
             (w) => w.name === specialistSelection[index],
           )?.points || 0
         : 0
+
     const options =
-      unitOptions[index]?.reduce((sum, name) => {
+      unitOptions[index]?.reduce((sum: number, name: string) => {
         const opt = unit.availableOptions?.find((o) => o.name === name)
         return sum + (opt?.points || 0)
       }, 0) || 0
+
     const extraModels =
       unit.category !== 'HQ'
         ? (unitExtraModels[index] || 0) * (unit.costPerModel || 0)
         : 0
+
     return base + specialist + options + extraModels
   }
 
   // Total points for the army
   const totalPoints = army.reduce(
-    (sum, unit, i) => sum + calculateTotalUnitPoints(unit, i),
+    (sum: number, unit: UnitTemplate, i: number) =>
+      sum + calculateUnitTotalPoints(unit, i),
     0,
   )
 
   const addUnit = (unit: UnitTemplate) => {
-    const unitPts = calculateUnitPoints(unit)
+    const unitPts = calculateUnitTotalPoints(unit, army.length)
     if (totalPoints + unitPts > pointsBudget) {
       alert(`Cannot add ${unit.name}: would exceed ${pointsBudget} pts limit`)
       return
@@ -123,28 +126,32 @@ export default function ArmyBuilder() {
     })
   }
 
-  // Export PDF (same as before)
+  // Sorted army by category
+  const sortedArmy = [...army].sort(
+    (a, b) =>
+      CATEGORY_ORDER.indexOf(a.category as UnitCategory) -
+      CATEGORY_ORDER.indexOf(b.category as UnitCategory),
+  )
+
   const exportPDF = () => {
     const doc = new jsPDF()
     let y = 10
     doc.setFontSize(16)
-    doc.text(
-      `${factionKey === 'OFN' ? 'Oceanic Federal Navy Force' : 'Crusaders Of The Cleansing Light Force'} (${totalPoints} pts)`,
-      10,
-      y,
-    )
+    doc.text(`${factionKey} Force List (${totalPoints} pts)`, 10, y)
     y += 10
 
     sortedArmy.forEach((u, i) => {
-      const totalUnit = calculateTotalUnitPoints(u, i)
+      const unitTotal = calculateUnitTotalPoints(u, i)
       doc.setFontSize(12)
-      doc.text(`${u.name} (${totalUnit} pts)`, 10, y)
+      doc.text(`${u.name} (${unitTotal} pts)`, 10, y)
       y += 6
       doc.setFontSize(10)
       doc.text(`Category: ${u.category}`, 12, y)
       y += 5
       doc.text(
-        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${u.category === 'Vehicle' ? u.STR : u.W}, WIP: ${u.WIP}, MOV: ${u.MOV}`,
+        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${
+          u.category === 'Vehicle' ? u.STR : u.W
+        }, WIP: ${u.WIP}, MOV: ${u.MOV}`,
         12,
         y,
       )
@@ -205,14 +212,13 @@ export default function ArmyBuilder() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* LEFT PANEL */}
+        {/* LEFT PANEL: available units */}
         <div className="w-1/3 overflow-y-auto border-r border-zinc-800 p-6">
           <h2 className="mb-4 text-xl font-bold">
             {factionKey === 'OFN'
               ? 'Oceanic Federal Navy Force'
               : 'Crusaders Of The Cleansing Light Force'}
           </h2>
-
           {units.length === 0 ? (
             <p>No units found.</p>
           ) : (
@@ -232,12 +238,12 @@ export default function ArmyBuilder() {
                 </tr>
               </thead>
               <tbody>
-                {units.map((u) => (
+                {units.map((u, i) => (
                   <tr key={u.id} className="hover:bg-zinc-800/50">
                     <td className="border border-zinc-700 p-2">{u.name}</td>
                     <td className="border border-zinc-700 p-2">{u.category}</td>
                     <td className="border border-zinc-700 p-2 text-right">
-                      {calculateUnitPoints(u)}
+                      {calculateUnitTotalPoints(u, i)}
                     </td>
                     <td className="border border-zinc-700 p-2 text-center">
                       <button
@@ -254,7 +260,7 @@ export default function ArmyBuilder() {
           )}
         </div>
 
-        {/* RIGHT PANEL */}
+        {/* RIGHT PANEL: army preview */}
         <div className="flex flex-1 flex-col bg-zinc-950 p-6">
           <h3 className="mb-2 text-lg font-semibold">Army Preview</h3>
           <div className="flex-1 overflow-y-auto">
@@ -263,7 +269,7 @@ export default function ArmyBuilder() {
             ) : (
               <ul className="space-y-3">
                 {sortedArmy.map((u, i) => {
-                  const totalUnit = calculateTotalUnitPoints(u, i)
+                  const totalUnit = calculateUnitTotalPoints(u, i)
                   return (
                     <li key={`${u.id}-${i}`} className="border p-2">
                       <div className="flex items-center justify-between">
@@ -277,96 +283,6 @@ export default function ArmyBuilder() {
                           −
                         </button>
                       </div>
-                      <div className="mt-1 space-y-1 text-sm">
-                        <div>Category: {u.category}</div>
-                        <div>
-                          CC: {u.CC}, BS: {u.BS}, DE: {u.DE}, FW: {u.FW}, W/STR:{' '}
-                          {u.category === 'Vehicle' ? u.STR : u.W}, WIP: {u.WIP}
-                          , MOV: {u.MOV}
-                        </div>
-                        {u.category === 'Vehicle' && (
-                          <div>
-                            F/S/R: {u.F}/{u.S}/{u.R}
-                          </div>
-                        )}
-                        {isSpecialistTeam(u) && (
-                          <select
-                            value={specialistSelection[i] || ''}
-                            onChange={(e) =>
-                              setSpecialistSelection((prev) => ({
-                                ...prev,
-                                [i]: e.target.value,
-                              }))
-                            }
-                            className="mt-1 rounded border px-1 text-sm"
-                          >
-                            <option value="">-- Weapon --</option>
-                            {SPECIALIST_WEAPONS[factionKey].map((w) => (
-                              <option key={w.name} value={w.name}>
-                                {w.name} (+{w.points})
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                        {u.category !== 'HQ' &&
-                          u.baseSize &&
-                          u.baseSize > 1 &&
-                          !isSpecialistTeam(u) && (
-                            <label className="mt-1 flex items-center space-x-1">
-                              <span>Extra Models:</span>
-                              <select
-                                value={unitExtraModels[i] || 0}
-                                onChange={(e) =>
-                                  setUnitExtraModels((prev) => ({
-                                    ...prev,
-                                    [i]: Number(e.target.value),
-                                  }))
-                                }
-                                className="rounded border px-1 text-sm"
-                              >
-                                {Array.from(
-                                  { length: u.baseSize },
-                                  (_, n) => n + 1,
-                                ).map((n) => (
-                                  <option key={n} value={n}>
-                                    {n}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                          )}
-                        {!isSpecialistTeam(u) &&
-                          u.availableOptions?.map((opt) => (
-                            <label
-                              key={opt.name}
-                              className="ml-2 mt-1 flex items-center space-x-1"
-                            >
-                              <input
-                                type="checkbox"
-                                checked={
-                                  unitOptions[i]?.includes(opt.name) || false
-                                }
-                                onChange={(e) => {
-                                  setUnitOptions((prev) => {
-                                    const current = prev[i] || []
-                                    return {
-                                      ...prev,
-                                      [i]: e.target.checked
-                                        ? [...current, opt.name]
-                                        : current.filter((o) => o !== opt.name),
-                                    }
-                                  })
-                                }}
-                              />
-                              <span className="text-sm">
-                                {opt.name} (+{opt.points})
-                              </span>
-                            </label>
-                          ))}
-                        {u.special_rules && (
-                          <div>Special Rules: {u.special_rules}</div>
-                        )}
-                      </div>
                     </li>
                   )
                 })}
@@ -374,7 +290,6 @@ export default function ArmyBuilder() {
             )}
           </div>
 
-          {/* Export button */}
           <div className="mt-4 flex justify-end">
             <button
               onClick={exportPDF}
