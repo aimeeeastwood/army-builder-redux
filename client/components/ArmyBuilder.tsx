@@ -9,10 +9,17 @@ import {
   CL_VEHICLES,
   type UnitTemplate,
   type UnitOption,
-  calculateUnitPoints,
 } from '../apis/units'
 
-type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
+type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Drone' | 'Vehicle'
+
+const CATEGORY_ORDER: UnitCategory[] = [
+  'HQ',
+  'Troop',
+  'Elite',
+  'Drone',
+  'Vehicle',
+]
 
 const SPECIALIST_WEAPONS: Record<string, UnitOption[]> = {
   CL: [
@@ -29,21 +36,24 @@ const SPECIALIST_WEAPONS: Record<string, UnitOption[]> = {
   ],
 }
 
-const CATEGORY_ORDER: UnitCategory[] = [
-  'HQ',
-  'Troop',
-  'Elite',
-  'Drone',
-  'Vehicle',
-]
+const FACTION_FULL_NAME: Record<string, string> = {
+  OFN: 'Oceanic Federal Navy Force',
+  CL: 'Crusaders Of The Cleansing Light Force',
+  MR: 'Melenesian Resistance Force',
+}
 
 const isSpecialistTeam = (unit: UnitTemplate) =>
   unit.name.includes('Specialist Team')
 
+// Returns base points from unit, vehicles included
+const calculateUnitPoints = (unit: UnitTemplate) => {
+  return unit.points || 0
+}
+
 export default function ArmyBuilder() {
   const { faction } = useParams<{ faction: string }>()
   if (!faction) return <p>No faction selected.</p>
-  const factionKey = faction as 'OFN' | 'CL'
+  const factionKey = faction as 'OFN' | 'CL' | 'MR'
 
   const [units, setUnits] = useState<UnitTemplate[]>([])
   const [army, setArmy] = useState<UnitTemplate[]>([])
@@ -92,7 +102,7 @@ export default function ArmyBuilder() {
     const base = calculateUnitPoints(u)
     const specialist =
       isSpecialistTeam(u) && specialistSelection[i]
-        ? SPECIALIST_WEAPONS[factionKey].find(
+        ? SPECIALIST_WEAPONS[factionKey]?.find(
             (w) => w.name === specialistSelection[i],
           )?.points || 0
         : 0
@@ -112,14 +122,14 @@ export default function ArmyBuilder() {
     const doc = new jsPDF()
     let y = 10
     doc.setFontSize(16)
-    doc.text(`${faction} Army List (${totalPoints} pts)`, 10, y)
+    doc.text(`${FACTION_FULL_NAME[factionKey]} (${totalPoints} pts)`, 10, y)
     y += 10
 
     sortedArmy.forEach((u, i) => {
       const basePoints = calculateUnitPoints(u)
       const specialistPoints =
         isSpecialistTeam(u) && specialistSelection[i]
-          ? SPECIALIST_WEAPONS[factionKey].find(
+          ? SPECIALIST_WEAPONS[factionKey]?.find(
               (w) => w.name === specialistSelection[i],
             )?.points || 0
           : 0
@@ -142,9 +152,7 @@ export default function ArmyBuilder() {
       doc.text(`Category: ${u.category}`, 12, y)
       y += 5
       doc.text(
-        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${
-          u.category === 'Vehicle' ? u.STR : u.W
-        }, WIP: ${u.WIP}, MOV: ${u.MOV}`,
+        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${u.category === 'Vehicle' ? u.STR : u.W}, WIP: ${u.WIP}, MOV: ${u.MOV}`,
         12,
         y,
       )
@@ -181,11 +189,23 @@ export default function ArmyBuilder() {
   }
 
   return (
-    <div className="h-screen bg-zinc-900 text-zinc-100">
-      <div className="grid h-full grid-cols-[1fr_2fr]">
-        {/* LEFT PANEL */}
-        <div className="overflow-y-auto border-r border-zinc-800 p-6">
-          <h2 className="mb-6 text-2xl font-bold">{faction} Army</h2>
+    <div className="flex h-screen flex-col bg-zinc-900 text-zinc-100">
+      {/* Top Header */}
+      <div className="flex items-center justify-between border-b border-zinc-800 p-6">
+        <h2 className="text-2xl font-bold">{FACTION_FULL_NAME[factionKey]}</h2>
+        <button
+          onClick={exportPDF}
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+        >
+          Export Army to PDF
+        </button>
+      </div>
+
+      {/* Main Panels */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* LEFT PANEL: unit selection */}
+        <div className="w-1/3 overflow-y-auto border-r border-zinc-800 p-6">
+          <h3 className="mb-4 text-lg font-semibold">Available Units</h3>
           {units.length === 0 ? (
             <p>No units found.</p>
           ) : (
@@ -227,15 +247,12 @@ export default function ArmyBuilder() {
           )}
         </div>
 
-        {/* RIGHT PANEL */}
-        <div className="flex flex-col bg-zinc-950">
-          <div className="border-b border-zinc-800 p-6">
-            <h3 className="text-lg font-semibold">
+        {/* RIGHT PANEL: selected army */}
+        <div className="flex flex-1 flex-col bg-zinc-950">
+          <div className="flex-1 overflow-y-auto p-6">
+            <h3 className="mb-4 text-lg font-semibold">
               Army Preview ({totalPoints} pts)
             </h3>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-6">
             {sortedArmy.length === 0 ? (
               <p>No units selected.</p>
             ) : (
@@ -243,7 +260,7 @@ export default function ArmyBuilder() {
                 {sortedArmy.map((u, i) => {
                   const specialistPoints =
                     isSpecialistTeam(u) && specialistSelection[i]
-                      ? SPECIALIST_WEAPONS[factionKey].find(
+                      ? SPECIALIST_WEAPONS[factionKey]?.find(
                           (w) => w.name === specialistSelection[i],
                         )?.points || 0
                       : 0
@@ -277,12 +294,12 @@ export default function ArmyBuilder() {
                           −
                         </button>
                       </div>
-
                       <div className="mt-1 space-y-1 text-sm">
                         <div>Category: {u.category}</div>
                         <div>
                           CC: {u.CC}, BS: {u.BS}, DE: {u.DE}, FW: {u.FW}, W/STR:{' '}
-                          {u.W}, WIP: {u.WIP}, MOV: {u.MOV}
+                          {u.category === 'Vehicle' ? u.STR : u.W}, WIP: {u.WIP}
+                          , MOV: {u.MOV}
                         </div>
                         {u.category === 'Vehicle' && (
                           <div>
@@ -301,7 +318,7 @@ export default function ArmyBuilder() {
                             className="mt-1 rounded border px-1 text-sm"
                           >
                             <option value="">-- Weapon --</option>
-                            {SPECIALIST_WEAPONS[factionKey].map((w) => (
+                            {SPECIALIST_WEAPONS[factionKey]?.map((w) => (
                               <option key={w.name} value={w.name}>
                                 {w.name} (+{w.points})
                               </option>
@@ -374,17 +391,10 @@ export default function ArmyBuilder() {
             )}
           </div>
 
-          <div className="border-t border-zinc-800 p-6">
-            <div className="mb-2 flex justify-between font-semibold">
-              <span>Total Points</span>
-              <span>{totalPoints} pts</span>
-            </div>
-            <button
-              onClick={exportPDF}
-              className="w-full rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-            >
-              Export Army to PDF
-            </button>
+          {/* Total Points Footer */}
+          <div className="flex justify-between border-t border-zinc-800 p-6 font-semibold">
+            <span>Total Points</span>
+            <span>{totalPoints} pts</span>
           </div>
         </div>
       </div>
