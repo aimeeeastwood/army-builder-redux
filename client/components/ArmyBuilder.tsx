@@ -63,13 +63,20 @@ export default function ArmyBuilder() {
     else setUnits([])
   }, [factionKey])
 
-  // Calculate total points for a single unit
-  const calculateUnitTotalPoints = (
-    unit: UnitTemplate,
-    index: number,
-  ): number => {
-    const base = unit.points || 0
+  const getBaseUnitPoints = (unit: UnitTemplate) => {
+    if (unit.category === 'Vehicle') {
+      return unit.points
+    }
 
+    // Squad units
+    return unit.baseSize * unit.costPerModel
+  }
+
+  // Calculate total points for a single unit
+  const calculateUnitTotalPoints = (unit: UnitTemplate, index: number) => {
+    const base = getBaseUnitPoints(unit)
+
+    // Specialist weapon
     const specialist =
       isSpecialistTeam(unit) && specialistSelection[index]
         ? SPECIALIST_WEAPONS[factionKey]?.find(
@@ -77,15 +84,19 @@ export default function ArmyBuilder() {
           )?.points || 0
         : 0
 
-    const options =
-      unitOptions[index]?.reduce((sum: number, name: string) => {
+    // Selected options
+    const options = (unitOptions[index] || []).reduce(
+      (sum: number, name: string) => {
         const opt = unit.availableOptions?.find((o) => o.name === name)
         return sum + (opt?.points || 0)
-      }, 0) || 0
+      },
+      0,
+    )
 
+    // Extra models (only for non-vehicles and non-HQ)
     const extraModels =
-      unit.category !== 'HQ'
-        ? (unitExtraModels[index] || 0) * (unit.costPerModel || 0)
+      unit.category !== 'Vehicle' && unit.category !== 'HQ'
+        ? (unitExtraModels[index] || 0) * unit.costPerModel
         : 0
 
     return base + specialist + options + extraModels
@@ -93,8 +104,7 @@ export default function ArmyBuilder() {
 
   // Total points for the army
   const totalPoints = army.reduce(
-    (sum: number, unit: UnitTemplate, i: number) =>
-      sum + calculateUnitTotalPoints(unit, i),
+    (sum, unit, i) => sum + calculateUnitTotalPoints(unit, i),
     0,
   )
 
@@ -190,25 +200,45 @@ export default function ArmyBuilder() {
   return (
     <div className="flex h-screen flex-col bg-zinc-900 text-zinc-100">
       {/* Top: Points Budget */}
-      <div className="flex items-center space-x-4 border-b border-zinc-800 p-4">
-        <label htmlFor="pointsBudget" className="font-semibold">
-          Points Budget:
-        </label>
-        <select
-          id="pointsBudget"
-          value={pointsBudget}
-          onChange={(e) => setPointsBudget(Number(e.target.value))}
-          className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
-        >
-          {[500, 750, 1000, 1500].map((pts) => (
-            <option key={pts} value={pts}>
-              {pts} pts
-            </option>
-          ))}
-        </select>
-        <span className="ml-auto font-semibold">
-          Total: {totalPoints} / {pointsBudget} pts
-        </span>
+      {/* Top: Faction info + Points Budget */}
+      <div className="flex items-center justify-between border-b border-zinc-800 p-4">
+        {/* Left: Faction icon + name */}
+        <div className="flex items-center space-x-4">
+          <img
+            src={`/assets/factions/${factionKey.toLowerCase()}.png`}
+            alt={`${factionKey} emblem`}
+            className="h-12 w-12 rounded-full border border-zinc-700 object-cover"
+          />
+          <span className="text-lg font-semibold text-white">
+            {factionKey === 'OFN'
+              ? 'Oceanic Federal Navy'
+              : 'Crusaders Of The Cleansing Light'}{' '}
+            Force
+          </span>
+        </div>
+
+        {/* Right: Points Budget */}
+        <div className="flex items-center space-x-4">
+          <label htmlFor="pointsBudget" className="font-semibold text-white">
+            Points Budget:
+          </label>
+          <select
+            id="pointsBudget"
+            value={pointsBudget.toString()}
+            onChange={(e) => setPointsBudget(Number(e.target.value))}
+            className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
+          >
+            {[500, 750, 1000, 1500].map((pts) => (
+              <option key={pts} value={pts.toString()}>
+                {pts} pts
+              </option>
+            ))}
+          </select>
+
+          <span className="font-semibold text-white">
+            Total: {totalPoints} / {pointsBudget} pts
+          </span>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -243,7 +273,7 @@ export default function ArmyBuilder() {
                     <td className="border border-zinc-700 p-2">{u.name}</td>
                     <td className="border border-zinc-700 p-2">{u.category}</td>
                     <td className="border border-zinc-700 p-2 text-right">
-                      {calculateUnitTotalPoints(u, i)}
+                      {getBaseUnitPoints(u)}
                     </td>
                     <td className="border border-zinc-700 p-2 text-center">
                       <button
@@ -268,24 +298,140 @@ export default function ArmyBuilder() {
               <p>No units selected.</p>
             ) : (
               <ul className="space-y-3">
-                {sortedArmy.map((u, i) => {
-                  const totalUnit = calculateUnitTotalPoints(u, i)
-                  return (
-                    <li key={`${u.id}-${i}`} className="border p-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">
-                          {u.name} ({totalUnit} pts)
-                        </span>
-                        <button
-                          onClick={() => removeUnit(i)}
-                          className="rounded border px-2 text-red-600 hover:bg-gray-200"
+                {sortedArmy.map((u, i) => (
+                  <li key={`${u.id}-${i}`} className="border p-2">
+                    {/* Header */}
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">
+                        {u.name} ({calculateUnitTotalPoints(u, i)} pts)
+                      </span>
+                      <button
+                        onClick={() => removeUnit(i)}
+                        className="rounded border px-2 text-red-600 hover:bg-gray-200"
+                      >
+                        −
+                      </button>
+                    </div>
+
+                    {/* Extra Models Dropdown */}
+                    {u.category !== 'Vehicle' &&
+                      u.category !== 'HQ' &&
+                      u.maxSize &&
+                      u.baseSize && (
+                        <div className="mt-2">
+                          <label className="mr-2 text-sm">Extra Models:</label>
+                          <select
+                            value={unitExtraModels[i] || 0}
+                            onChange={(e) =>
+                              setUnitExtraModels((prev) => ({
+                                ...prev,
+                                [i]: Number(e.target.value),
+                              }))
+                            }
+                            className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
+                          >
+                            {Array.from(
+                              { length: u.maxSize - u.baseSize + 1 }, // +1 because dropdown includes 0
+                              (_, n) => n,
+                            ).map((num) => (
+                              <option key={num} value={num}>
+                                {num}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                    {/* Specialist Weapon Dropdown */}
+                    {isSpecialistTeam(u) &&
+                    SPECIALIST_WEAPONS[factionKey]?.length ? (
+                      <div className="mt-2">
+                        <label className="mr-2 text-sm">
+                          Specialist Weapon:
+                        </label>
+                        <select
+                          value={specialistSelection[i] || ''}
+                          onChange={(e) =>
+                            setSpecialistSelection((prev) => ({
+                              ...prev,
+                              [i]: e.target.value,
+                            }))
+                          }
+                          className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
                         >
-                          −
-                        </button>
+                          <option value="">None</option>
+                          {SPECIALIST_WEAPONS[factionKey]?.map((w) => (
+                            <option key={w.name} value={w.name}>
+                              {w.name} (+{w.points})
+                            </option>
+                          ))}
+                        </select>
                       </div>
-                    </li>
-                  )
-                })}
+                    ) : null}
+
+                    {/* Unit Options Checkboxes */}
+                    {u.availableOptions?.length ? (
+                      <div className="mt-2 text-sm">
+                        <span className="block font-medium">Options:</span>
+                        <div className="flex flex-wrap gap-2">
+                          {u.availableOptions.map((opt) => (
+                            <label
+                              key={opt.name}
+                              className="flex items-center space-x-1"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={
+                                  unitOptions[i]?.includes(opt.name) || false
+                                }
+                                onChange={(e) => {
+                                  setUnitOptions((prev) => {
+                                    const prevOptions = prev[i] || []
+                                    if (e.target.checked) {
+                                      return {
+                                        ...prev,
+                                        [i]: [...prevOptions, opt.name],
+                                      }
+                                    } else {
+                                      return {
+                                        ...prev,
+                                        [i]: prevOptions.filter(
+                                          (n) => n !== opt.name,
+                                        ),
+                                      }
+                                    }
+                                  })
+                                }}
+                                className="accent-blue-500"
+                              />
+                              <span>
+                                {opt.name} (+{opt.points})
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {/* Equipment / Special Rules */}
+                    {u.equipment && (
+                      <div className="mt-1 text-sm text-zinc-300">
+                        Equipment:{' '}
+                        {Array.isArray(u.equipment)
+                          ? u.equipment.join(', ')
+                          : u.equipment}
+                      </div>
+                    )}
+                    {u.special_rules && (
+                      <div className="mt-1 text-sm text-zinc-300">
+                        Special Rules:{' '}
+                        {Array.isArray(u.special_rules)
+                          ? u.special_rules.join(', ')
+                          : u.special_rules}
+                      </div>
+                    )}
+                  </li>
+                ))}
               </ul>
             )}
           </div>

@@ -9,15 +9,12 @@ export interface UnitOption {
   description?: string
   points: number // optional total points for this option
 }
-
-export interface UnitTemplate {
+export interface BaseUnit {
   id: string
   name: string
-  faction: string
-  category: 'HQ' | 'Troop' | 'Elite' | 'Drone' | 'Vehicle'
-  baseSize?: number // optional
-  maxSize?: number // optional
-  costPerModel?: number // optional
+  faction: Faction
+  category: UnitCategory
+
   CC: number
   BS: number
   DE: number
@@ -27,21 +24,36 @@ export interface UnitTemplate {
   MOV: string
   equipment: string
   special_rules: string
-  STR?: number // for vehicles
-  F?: number // for vehicles
-  S?: number // for vehicles
-  R?: number // for vehicles
-  options?: UnitOption[]
+
   availableOptions?: UnitOption[]
-  /** total points is computed dynamically */
-  points?: number
 }
 
-export const calculateUnitPoints = (unit: UnitTemplate) => {
-  if (unit.category === 'Vehicle') return unit.points || 0
-  // for infantry / other units
-  return (unit.W || 0) + (unit.baseSize || 1) // adjust based on how you calculate infantry points
+export interface SquadUnit extends BaseUnit {
+  category: 'HQ' | 'Troop' | 'Elite' | 'Drone'
+  baseSize: number
+  maxSize: number
+  costPerModel: number
 }
+
+export interface VehicleUnit extends BaseUnit {
+  category: 'Vehicle'
+  points: number
+  STR: number
+  F: number
+  S: number
+  R: number
+}
+
+export type UnitTemplate = SquadUnit | VehicleUnit
+
+export const calculateUnitPoints = (unit: UnitTemplate) => {
+  if (unit.category === 'Vehicle') {
+    return unit.points
+  }
+
+  return unit.baseSize * unit.costPerModel
+}
+
 // ---------------- OFN Squads & Elites & Drones ----------------
 export const OFN_UNITS: UnitTemplate[] = [
   // HQ
@@ -512,5 +524,3 @@ export const CL_VEHICLES: UnitTemplate[] = [
     R: 12,
   },
 ]
-
-OFN_UNITS.forEach((unit) => (unit.points = calculateUnitPoints(unit)))
