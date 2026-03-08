@@ -1,21 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 
+// Import images directly from src/assets
+import ofnIcon from '../assets/factions/ofn.png'
+import clIcon from '../assets/factions/cl.png'
+import mrIcon from '../assets/factions/mr.png'
+
 const FACTIONS = [
-  {
-    key: 'OFN',
-    name: 'Oceanic Federal Navy',
-    image: '/assets/factions/ofn.png',
-  },
-  {
-    key: 'CL',
-    name: 'Crusaders Of The Cleansing Light',
-    image: '/assets/factions/cl.png',
-  },
-  {
-    key: 'MR',
-    name: 'Melenesian Resistance',
-    image: '/assets/factions/mr.png',
-  },
+  { key: 'OFN', name: 'Oceanic Federal Navy', image: ofnIcon },
+  { key: 'CL', name: 'Crusaders Of The Cleansing Light', image: clIcon },
+  { key: 'MR', name: 'Melenesian Resistance', image: mrIcon },
 ]
 
 const Factions = () => {
@@ -27,7 +20,9 @@ const Factions = () => {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
-      <h1 className="mb-16 text-4xl font-bold tracking-wide">Select a Force</h1>
+      <h1 className="mb-16 text-4xl font-bold tracking-wide">
+        Kairos: The Fulcrum Wars
+      </h1>
 
       <div className="flex gap-20">
         {FACTIONS.map((faction) => (
