@@ -1,5 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import ofnIcon from '../assets/factions/ofn.png'
+import clIcon from '../assets/factions/cl.png'
 import jsPDF from 'jspdf'
 
 import {
@@ -9,9 +11,14 @@ import {
   CL_VEHICLES,
   type UnitTemplate,
   type UnitOption,
-} from '../apis/units'
+} from '../../apis/units'
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
+
+const FACTION_ICONS: Record<'OFN' | 'CL', string> = {
+  OFN: ofnIcon,
+  CL: clIcon,
+}
 
 const SPECIALIST_WEAPONS: Record<string, UnitOption[]> = {
   CL: [
@@ -205,7 +212,7 @@ export default function ArmyBuilder() {
         {/* Left: Faction icon + name */}
         <div className="flex items-center space-x-4">
           <img
-            src={`/assets/factions/${factionKey.toLowerCase()}.png`}
+            src={FACTION_ICONS[factionKey]}
             alt={`${factionKey} emblem`}
             className="h-12 w-12 rounded-full border border-zinc-700 object-cover"
           />

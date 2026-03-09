@@ -1,8 +1,8 @@
 // client/routes.tsx
 import { RouteObject } from 'react-router'
-import Layout from './components/Layout'
-import Factions from './components/Factions'
-import ArmyBuilder from './components/ArmyBuilder'
+import Layout from './src/components/Layout'
+import Factions from './src/components/Factions'
+import ArmyBuilder from './src/components/ArmyBuilder'
 
 const routes: RouteObject[] = [
   {

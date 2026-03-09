@@ -3,12 +3,10 @@ import { useNavigate } from 'react-router-dom'
 // Import images directly from src/assets
 import ofnIcon from '../assets/factions/ofn.png'
 import clIcon from '../assets/factions/cl.png'
-import mrIcon from '../assets/factions/mr.png'
 
 const FACTIONS = [
   { key: 'OFN', name: 'Oceanic Federal Navy', image: ofnIcon },
   { key: 'CL', name: 'Crusaders Of The Cleansing Light', image: clIcon },
-  { key: 'MR', name: 'Melenesian Resistance', image: mrIcon },
 ]
 
 const Factions = () => {
