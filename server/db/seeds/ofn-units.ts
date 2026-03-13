@@ -1,5 +1,7 @@
+import { Knex } from 'knex'
+
 // server/db/seeds/ofn_units.js
-export async function seed(knex) {
+export async function seed(knex: Knex) {
   // Delete existing OFN units
   await knex('units').where({ faction: 'OFN' }).del()
 
@@ -16,7 +18,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 2,
       MOV: '4-4',
       equipment: 'Standard Issue Rifles',
       special_rules: 'Infantry, Command',
@@ -34,7 +35,6 @@ export async function seed(knex) {
       FW: 2,
       W: 1,
       WIP: 9,
-      S: 2,
       MOV: '4-4',
       equipment: 'Standard Issue Rifles',
       special_rules: 'Infantry',
@@ -50,7 +50,6 @@ export async function seed(knex) {
       FW: 2,
       W: 1,
       WIP: 9,
-      S: 2,
       MOV: '4-4',
       equipment: 'Specialist Gear',
       special_rules: 'Infantry, Specialist',
@@ -68,7 +67,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 2,
       MOV: '4-4',
       equipment: 'Jump Packs, Rifles',
       special_rules: 'Infantry, Airborne',
@@ -84,7 +82,6 @@ export async function seed(knex) {
       FW: 3,
       W: 2, // Power Armour
       WIP: 10,
-      S: 3,
       MOV: '4-4',
       equipment: 'Power Armour, Heavy Weapons',
       special_rules: 'Infantry, Elite, Power Armour',
@@ -100,7 +97,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 3,
       MOV: '4-4',
       equipment: 'Special Ops Gear',
       special_rules: 'Infantry, Elite, Specialist',
@@ -118,7 +114,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 1,
       MOV: '4-4',
       equipment: 'Drone Weapons',
       special_rules: 'Drone',
@@ -134,7 +129,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 1,
       MOV: '4-4',
       equipment: 'Drone Weapons',
       special_rules: 'Drone',
@@ -150,7 +144,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 1,
       MOV: '4-4',
       equipment: 'Drone Weapons',
       special_rules: 'Drone',
@@ -166,7 +159,6 @@ export async function seed(knex) {
       FW: 3,
       W: 1,
       WIP: 10,
-      S: 1,
       MOV: '4-4',
       equipment: 'Specialist Drone Gear',
       special_rules: 'Drone, Specialist',
@@ -184,7 +176,6 @@ export async function seed(knex) {
       S: 4,
       R: 3,
       WIP: 7,
-      S: 6,
       STR: 5,
       MOV: '4-4',
       equipment: 'Cannon, Mech Foot',
@@ -202,7 +193,6 @@ export async function seed(knex) {
       S: 3,
       R: 3,
       WIP: 7,
-      S: 6,
       STR: 4,
       MOV: '4-4',
       equipment: 'Heavy Cannon, Mech Foot',

@@ -1,88 +1,26 @@
 {
-  "name": "boilerplate-fullstack-auth",
-  "type": "module",
-  "version": "2.0.0",
-  "main": "server/index.js",
-  "license": "MIT",
-  "keywords": [
-    "fullstack"
-  ],
+  "name": "kairos-army-builder",
+  "version": "1.0.0",
+  "main": "server/dist/server.js",
   "scripts": {
-  "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-  "dev:client": "vite",
-  "dev:server": "tsc -p server/tsconfig.json --watch & nodemon server/dist/server.js",
-  
-  "build": "npm run build:client && npm run build:server",
-  "build:client": "vite build",
-  "build:server": "tsc -p server/tsconfig.json",
-
-  "start": "node server/dist/server.js"
-},
-
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite",
+    "dev:server": "tsc -p server/tsconfig.json --watch & nodemon server/dist/server.js",
+    "build": "npm run build:client && npm run build:server",
+    "build:client": "vite build",
+    "build:server": "tsc -p server/tsconfig.json",
+    "start": "node server/dist/server.js"
+  },
   "dependencies": {
-    "@auth0/auth0-react": "^2.2.4",
-    "cors": "^2.8.6",
-    "express": "^4.22.1",
-    "express-jwt": "^7.7.5",
-    "http-status-codes": "^2.3.0",
-    "jsonwebtoken": "^9.0.2",
-    "jspdf": "^4.2.0",
-    "jwks-rsa": "^2.1.5",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
     "knex": "^2.5.1",
-    "react-router-dom": "^7.13.0",
-    "sqlite3": "^5.1.6",
-    "superagent": "^10.2.2"
+    "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "@tanstack/eslint-plugin-query": "^5.12.2",
-    "@tanstack/react-query": "^5.12.2",
-    "@tanstack/react-query-devtools": "^5.13.3",
-    "@testing-library/jest-dom": "^6.2.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.5.1",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^4.17.25",
-    "@types/jspdf": "^1.3.3",
-    "@types/node": "^25.2.3",
-    "@types/react": "^18.3.28",
-    "@types/react-dom": "^18.0.11",
-    "@types/react-router-dom": "^5.3.3",
-    "@types/superagent": "^8.1.1",
-    "@types/supertest": "^6.0.2",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.19",
-    "esbuild": "^0.18.19",
-    "eslint": "^8.57.1",
-    "eslint-plugin-import": "^2.29.1",
-    "eslint-plugin-jsx-a11y": "^6.8.0",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.0.0",
-    "eslint-plugin-promise": "^6.6.0",
-    "eslint-plugin-react": "^7.37.5",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "jsdom": "^22.1.0",
-    "npm-run-all": "^4.1.5",
-    "postcss": "^8.4.38",
-    "prettier": "^3.2.5",
-    "prettier-plugin-tailwindcss": "^0.5.13",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router": "^7.7.0",
-    "sass": "^1.50.1",
-    "supertest": "^6.3.4",
-    "tailwindcss": "^3.4.3",
-    "ts-node": "^10.9.2",
-    "tsx": "^3.14.0",
-    "typescript": "^5.9.3",
-    "vite": "^5.0.0",
-    "vitest": "^1.2.0"
-  },
-  "prettier": {
-    "semi": false,
-    "singleQuote": true,
-    "plugins": [
-      "prettier-plugin-tailwindcss"
-    ]
-  },
-  "browserslist": "> 2%, not dead"
+    "typescript": "^5.2.2",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.1"
+  }
 }

@@ -1,9 +1,14 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 // server/routes/units.ts
-import { Router } from 'express';
-import knexConfig from '../db/knexfile.js';
-import knex from 'knex';
-const router = Router();
-const db = knex(knexConfig.development);
+const express_1 = require("express");
+const knexfile_js_1 = __importDefault(require("../db/knexfile.js"));
+const knex_1 = __importDefault(require("knex"));
+const router = (0, express_1.Router)();
+const db = (0, knex_1.default)(knexfile_js_1.default.development);
 // GET /api/v1/units
 // Optional query: ?faction=OFN
 router.get('/', async (req, res) => {
@@ -21,4 +26,4 @@ router.get('/', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch units' });
     }
 });
-export default router;
+exports.default = router;

@@ -1,10 +1,14 @@
 {
-  "extends": "../tsconfig.json",
   "compilerOptions": {
-    "types": ["node"],
-    "module": "ESNext",
     "target": "ES2020",
-    "strict": true
+    "module": "CommonJS",
+    "outDir": "./dist",
+    "rootDir": "./",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   },
-  "include": ["./**/*.ts"]   // OK, as long as old files are deleted
+  "include": ["./**/*.ts"]
 }
+

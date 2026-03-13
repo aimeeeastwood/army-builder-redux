@@ -1,16 +1,14 @@
-import * as Path from 'node:path'
-import * as URL from 'node:url'
+import path from 'path'
 import type { Knex } from 'knex'
 
-const __filename = URL.fileURLToPath(import.meta.url)
-const __dirname = Path.dirname(__filename)
+const dbPath = path.join(__dirname, 'dev.sqlite3')
 
-export default {
+const knexConfig: { [key: string]: Knex.Config } = {
   development: {
     client: 'sqlite3',
     useNullAsDefault: true,
     connection: {
-      filename: Path.join(__dirname, 'dev.sqlite3'),
+      filename: dbPath,
     },
     pool: {
       afterCreate: (conn: any, cb: (err?: Error | null) => void) => {
@@ -18,7 +16,6 @@ export default {
       },
     },
   },
-
   test: {
     client: 'sqlite3',
     useNullAsDefault: true,
@@ -26,10 +23,10 @@ export default {
       filename: ':memory:',
     },
     migrations: {
-      directory: Path.join(__dirname, 'migrations'),
+      directory: path.join(__dirname, 'migrations'),
     },
     seeds: {
-      directory: Path.join(__dirname, 'seeds'),
+      directory: path.join(__dirname, 'seeds'),
     },
     pool: {
       afterCreate: (conn: any, cb: (err?: Error | null) => void) => {
@@ -37,7 +34,6 @@ export default {
       },
     },
   },
-
   production: {
     client: 'sqlite3',
     useNullAsDefault: true,
@@ -50,4 +46,6 @@ export default {
       },
     },
   },
-} as { [key: string]: Knex.Config }
+}
+
+export default knexConfig

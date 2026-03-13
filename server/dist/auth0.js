@@ -1,10 +1,15 @@
-import { expressjwt as jwt } from 'express-jwt';
-import jwks from 'jwks-rsa';
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_jwt_1 = require("express-jwt");
+const jwks_rsa_1 = __importDefault(require("jwks-rsa"));
 // TODO: set the domain and audience (API Identifier)
 const domain = 'https://';
 const audience = 'https://';
-const checkJwt = jwt({
-    secret: jwks.expressJwtSecret({
+const checkJwt = (0, express_jwt_1.expressjwt)({
+    secret: jwks_rsa_1.default.expressJwtSecret({
         cache: true,
         rateLimit: true,
         jwksRequestsPerMinute: 5,
@@ -14,4 +19,4 @@ const checkJwt = jwt({
     issuer: `${domain}/`,
     algorithms: ['RS256'],
 });
-export default checkJwt;
+exports.default = checkJwt;
