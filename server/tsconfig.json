@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "module": "ESNext",
+    "target": "ES2020",
+    "strict": true
+  },
+  "include": ["./**/*.ts"]   // OK, as long as old files are deleted
+}

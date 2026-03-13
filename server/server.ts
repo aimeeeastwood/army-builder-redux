@@ -1,8 +1,7 @@
-// server/server.ts
-import * as express from 'express'
-const cors = require('cors')
-const path = require('path')
-const armyRoutes = require('./routes/armyRoutes')
+import express from 'express'
+import cors from 'cors'
+import path from 'path'
+import armyRoutes from './routes/armyRoutes' // note the .js if built from TS
 
 const app = express()
 
@@ -13,9 +12,8 @@ app.use(express.json())
 app.use('/army', armyRoutes)
 
 // Example: serve static files if needed
-// app.use(express.static(path.join(__dirname, 'public')))
+// app.use(express.static(path.join(__dirname, 'public')));
 
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`)
+app.listen(3000, () => {
+  console.log('Server running on port 3000')
 })
