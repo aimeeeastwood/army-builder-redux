@@ -15,6 +15,62 @@ import {
 
 type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
 
+interface ApiUnit {
+  id: number
+  name: string
+  type: string
+  faction_id: number
+  cc: number | null
+  bs: number | null
+  de: number | null
+  fw: number | null
+  w: number | null
+  wip: number | null
+  s: number | null
+  mov: string | null
+}
+
+const FACTION_BY_ID: Record<number, 'OFN' | 'CL'> = { 1: 'OFN', 2: 'CL' }
+
+function mapApiUnit(u: ApiUnit, fallbackFaction: 'OFN' | 'CL'): UnitTemplate {
+  const faction = FACTION_BY_ID[u.faction_id] ?? fallbackFaction
+  const base = {
+    id: String(u.id),
+    name: u.name,
+    faction,
+    category: u.type as UnitCategory,
+    CC: u.cc ?? 0,
+    BS: u.bs ?? 0,
+    DE: u.de ?? 0,
+    FW: u.fw ?? 0,
+    W: u.w ?? 1,
+    WIP: u.wip ?? 0,
+    MOV: u.mov ?? '4-4',
+    equipment: '',
+    special_rules: '',
+  }
+  if (u.type === 'Vehicle') {
+    // points/STR/F/R not yet in DB schema — placeholder values
+    return {
+      ...base,
+      category: 'Vehicle',
+      points: 0,
+      STR: 0,
+      F: 0,
+      S: u.s ?? 0,
+      R: 0,
+    }
+  }
+  // baseSize/maxSize/costPerModel not yet in DB schema — placeholder values
+  return {
+    ...base,
+    category: u.type as 'HQ' | 'Troop' | 'Elite' | 'Drone',
+    baseSize: 1,
+    maxSize: 1,
+    costPerModel: 10,
+  }
+}
+
 const FACTION_ICONS: Record<'OFN' | 'CL', string> = {
   OFN: ofnIcon,
   CL: clIcon,
@@ -43,6 +99,8 @@ const CATEGORY_ORDER: UnitCategory[] = [
   'Vehicle',
 ]
 
+const USE_API = true
+
 const isSpecialistTeam = (unit: UnitTemplate) =>
   unit.name.includes('Specialist Team')
 
@@ -62,12 +120,44 @@ export default function ArmyBuilder() {
     Record<number, number>
   >({})
   const [pointsBudget, setPointsBudget] = useState<number>(1000)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Load faction units on mount/change
   useEffect(() => {
-    if (factionKey === 'OFN') setUnits([...OFN_UNITS, ...OFN_VEHICLES])
-    else if (factionKey === 'CL') setUnits([...CL_UNITS, ...CL_VEHICLES])
-    else setUnits([])
+    const staticUnits =
+      factionKey === 'OFN'
+        ? [...OFN_UNITS, ...OFN_VEHICLES]
+        : factionKey === 'CL'
+          ? [...CL_UNITS, ...CL_VEHICLES]
+          : []
+
+    if (!USE_API) {
+      setUnits(staticUnits)
+      return
+    }
+
+    // Show static data immediately while fetch is in flight
+    setUnits(staticUnits)
+    setIsLoading(true)
+
+    fetch(`/units?faction=${factionKey}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json() as Promise<ApiUnit[]>
+      })
+      .then((data) => {
+        if (data.length > 0) {
+          setUnits(data.map((u) => mapApiUnit(u, factionKey)))
+        }
+      })
+      .catch(() => {
+        console.warn(
+          `[ArmyBuilder] API unavailable, using static data for ${factionKey}`,
+        )
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
   }, [factionKey])
 
   const getBaseUnitPoints = (unit: UnitTemplate) => {
@@ -256,7 +346,9 @@ export default function ArmyBuilder() {
               ? 'Oceanic Federal Navy Force'
               : 'Crusaders Of The Cleansing Light Force'}
           </h2>
-          {units.length === 0 ? (
+          {isLoading ? (
+            <p className="text-zinc-400">Loading units...</p>
+          ) : units.length === 0 ? (
             <p>No units found.</p>
           ) : (
             <table className="w-full table-auto border-collapse border border-zinc-700 text-sm">

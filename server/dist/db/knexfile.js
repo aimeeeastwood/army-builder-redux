@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
-const dbPath = path_1.default.join(__dirname, 'dev.sqlite3');
+const dbPath = path_1.default.join(process.cwd(), 'server/db/dev.sqlite3');
 const knexConfig = {
     development: {
         client: 'sqlite3',

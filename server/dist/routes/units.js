@@ -9,14 +9,23 @@ const knexfile_js_1 = __importDefault(require("../db/knexfile.js"));
 const knex_1 = __importDefault(require("knex"));
 const router = (0, express_1.Router)();
 const db = (0, knex_1.default)(knexfile_js_1.default.development);
-// GET /api/v1/units
-// Optional query: ?faction=OFN
+const FACTION_IDS = {
+    OFN: 1,
+    CL: 2,
+};
+// GET /units
+// Optional query: ?faction=OFN or ?faction=CL
 router.get('/', async (req, res) => {
     const { faction } = req.query;
     try {
         let query = db('units').select('*');
         if (faction) {
-            query = query.where('faction', faction);
+            const factionId = FACTION_IDS[String(faction).toUpperCase()];
+            if (!factionId) {
+                res.status(400).json({ error: `Unknown faction: ${faction}` });
+                return;
+            }
+            query = query.where('faction_id', factionId);
         }
         const units = await query;
         res.json(units);

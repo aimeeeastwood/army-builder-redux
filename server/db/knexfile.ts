@@ -1,7 +1,7 @@
 import path from 'path'
 import type { Knex } from 'knex'
 
-const dbPath = path.join(__dirname, 'dev.sqlite3')
+const dbPath = path.join(process.cwd(), 'server/db/dev.sqlite3')
 
 const knexConfig: { [key: string]: Knex.Config } = {
   development: {

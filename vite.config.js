@@ -7,6 +7,8 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:3000',
+      '/units': 'http://localhost:3000',
+      '/army': 'http://localhost:3000',
     },
   },
 })
