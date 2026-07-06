@@ -4,91 +4,12 @@ import ofnIcon from '../assets/factions/ofn.png'
 import clIcon from '../assets/factions/cl.png'
 import jsPDF from 'jspdf'
 
-import {
-  OFN_UNITS,
-  OFN_VEHICLES,
-  CL_UNITS,
-  CL_VEHICLES,
-  type UnitTemplate,
-  type UnitOption,
-} from '../../apis/units'
-
-type UnitCategory = 'HQ' | 'Troop' | 'Elite' | 'Vehicle' | 'Drone'
-
-interface ApiUnit {
-  id: number
-  name: string
-  type: string
-  faction_id: number
-  cc: number | null
-  bs: number | null
-  de: number | null
-  fw: number | null
-  w: number | null
-  wip: number | null
-  s: number | null
-  mov: string | null
-}
-
-const FACTION_BY_ID: Record<number, 'OFN' | 'CL'> = { 1: 'OFN', 2: 'CL' }
-
-function mapApiUnit(u: ApiUnit, fallbackFaction: 'OFN' | 'CL'): UnitTemplate {
-  const faction = FACTION_BY_ID[u.faction_id] ?? fallbackFaction
-  const base = {
-    id: String(u.id),
-    name: u.name,
-    faction,
-    category: u.type as UnitCategory,
-    CC: u.cc ?? 0,
-    BS: u.bs ?? 0,
-    DE: u.de ?? 0,
-    FW: u.fw ?? 0,
-    W: u.w ?? 1,
-    WIP: u.wip ?? 0,
-    MOV: u.mov ?? '4-4',
-    equipment: '',
-    special_rules: '',
-  }
-  if (u.type === 'Vehicle') {
-    // points/STR/F/R not yet in DB schema — placeholder values
-    return {
-      ...base,
-      category: 'Vehicle',
-      points: 0,
-      STR: 0,
-      F: 0,
-      S: u.s ?? 0,
-      R: 0,
-    }
-  }
-  // baseSize/maxSize/costPerModel not yet in DB schema — placeholder values
-  return {
-    ...base,
-    category: u.type as 'HQ' | 'Troop' | 'Elite' | 'Drone',
-    baseSize: 1,
-    maxSize: 1,
-    costPerModel: 10,
-  }
-}
+import { getUnits } from '../../apis/api'
+import type { UnitTemplate, Faction, UnitCategory } from '../../../models/units'
 
 const FACTION_ICONS: Record<'OFN' | 'CL', string> = {
   OFN: ofnIcon,
   CL: clIcon,
-}
-
-const SPECIALIST_WEAPONS: Record<string, UnitOption[]> = {
-  CL: [
-    { name: 'HMG', points: 4 },
-    { name: 'RPG', points: 5 },
-    { name: 'Rocket Mortar', points: 5 },
-    { name: 'Sniper Rifle', points: 4 },
-  ],
-  OFN: [
-    { name: 'HMG', points: 4 },
-    { name: 'Benling', points: 6 },
-    { name: 'Mortar', points: 5 },
-    { name: 'Smart Sniper Rifle', points: 4 },
-  ],
 }
 
 const CATEGORY_ORDER: UnitCategory[] = [
@@ -98,8 +19,6 @@ const CATEGORY_ORDER: UnitCategory[] = [
   'Drone',
   'Vehicle',
 ]
-
-const USE_API = true
 
 const isSpecialistTeam = (unit: UnitTemplate) =>
   unit.name.includes('Specialist Team')
@@ -112,9 +31,6 @@ export default function ArmyBuilder() {
   // State
   const [units, setUnits] = useState<UnitTemplate[]>([])
   const [army, setArmy] = useState<UnitTemplate[]>([])
-  const [specialistSelection, setSpecialistSelection] = useState<
-    Record<number, string>
-  >({})
   const [unitOptions, setUnitOptions] = useState<Record<number, string[]>>({})
   const [unitExtraModels, setUnitExtraModels] = useState<
     Record<number, number>
@@ -124,36 +40,13 @@ export default function ArmyBuilder() {
 
   // Load faction units on mount/change
   useEffect(() => {
-    const staticUnits =
-      factionKey === 'OFN'
-        ? [...OFN_UNITS, ...OFN_VEHICLES]
-        : factionKey === 'CL'
-          ? [...CL_UNITS, ...CL_VEHICLES]
-          : []
-
-    if (!USE_API) {
-      setUnits(staticUnits)
-      return
-    }
-
-    // Show static data immediately while fetch is in flight
-    setUnits(staticUnits)
     setIsLoading(true)
-
-    fetch(`/units?faction=${factionKey}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-        return res.json() as Promise<ApiUnit[]>
-      })
+    getUnits(factionKey as Faction)
       .then((data) => {
-        if (data.length > 0) {
-          setUnits(data.map((u) => mapApiUnit(u, factionKey)))
-        }
+        setUnits(data)
       })
-      .catch(() => {
-        console.warn(
-          `[ArmyBuilder] API unavailable, using static data for ${factionKey}`,
-        )
+      .catch((err) => {
+        console.error('Failed to fetch units:', err)
       })
       .finally(() => {
         setIsLoading(false)
@@ -173,14 +66,6 @@ export default function ArmyBuilder() {
   const calculateUnitTotalPoints = (unit: UnitTemplate, index: number) => {
     const base = getBaseUnitPoints(unit)
 
-    // Specialist weapon
-    const specialist =
-      isSpecialistTeam(unit) && specialistSelection[index]
-        ? SPECIALIST_WEAPONS[factionKey]?.find(
-            (w) => w.name === specialistSelection[index],
-          )?.points || 0
-        : 0
-
     // Selected options
     const options = (unitOptions[index] || []).reduce(
       (sum: number, name: string) => {
@@ -196,7 +81,7 @@ export default function ArmyBuilder() {
         ? (unitExtraModels[index] || 0) * unit.costPerModel
         : 0
 
-    return base + specialist + options + extraModels
+    return base + options + extraModels
   }
 
   // Total points for the army
@@ -216,11 +101,6 @@ export default function ArmyBuilder() {
 
   const removeUnit = (index: number) => {
     setArmy((prev) => prev.filter((_, i) => i !== index))
-    setSpecialistSelection((prev) => {
-      const copy = { ...prev }
-      delete copy[index]
-      return copy
-    })
     setUnitOptions((prev) => {
       const copy = { ...prev }
       delete copy[index]
@@ -236,8 +116,8 @@ export default function ArmyBuilder() {
   // Sorted army by category
   const sortedArmy = [...army].sort(
     (a, b) =>
-      CATEGORY_ORDER.indexOf(a.category as UnitCategory) -
-      CATEGORY_ORDER.indexOf(b.category as UnitCategory),
+      CATEGORY_ORDER.indexOf(a.category) -
+      CATEGORY_ORDER.indexOf(b.category),
   )
 
   const exportPDF = () => {
@@ -255,22 +135,16 @@ export default function ArmyBuilder() {
       doc.setFontSize(10)
       doc.text(`Category: ${u.category}`, 12, y)
       y += 5
-      doc.text(
-        `CC: ${u.CC}, BS: ${u.BS}, DE: ${u.DE}, FW: ${u.FW}, W/STR: ${
-          u.category === 'Vehicle' ? u.STR : u.W
-        }, WIP: ${u.WIP}, MOV: ${u.MOV}`,
-        12,
-        y,
-      )
+      
+      const stats = `CC: ${u.cc}, BS: ${u.bs}, DE: ${u.de}, FW: ${u.fw}, ${u.category === 'Vehicle' ? 'STR: ' + u.str : 'W: ' + u.w}, WIP: ${u.wip}, MOV: ${u.mov}`
+      doc.text(stats, 12, y)
       y += 5
+      
       if (u.category === 'Vehicle') {
-        doc.text(`F/S/R: ${u.F}/${u.S}/${u.R}`, 12, y)
+        doc.text(`F/S/R: ${u.f}/${u.s}/${u.r}`, 12, y)
         y += 5
       }
-      if (isSpecialistTeam(u) && specialistSelection[i]) {
-        doc.text(`Specialist Weapon: ${specialistSelection[i]}`, 12, y)
-        y += 5
-      }
+      
       if (unitExtraModels[i]) {
         doc.text(`Extra Models: ${unitExtraModels[i]}`, 12, y)
         y += 5
@@ -296,10 +170,7 @@ export default function ArmyBuilder() {
 
   return (
     <div className="flex h-screen flex-col bg-zinc-900 text-zinc-100">
-      {/* Top: Points Budget */}
-      {/* Top: Faction info + Points Budget */}
       <div className="flex items-center justify-between border-b border-zinc-800 p-4">
-        {/* Left: Faction icon + name */}
         <div className="flex items-center space-x-4">
           <img
             src={FACTION_ICONS[factionKey]}
@@ -314,7 +185,6 @@ export default function ArmyBuilder() {
           </span>
         </div>
 
-        {/* Right: Points Budget */}
         <div className="flex items-center space-x-4">
           <label htmlFor="pointsBudget" className="font-semibold text-white">
             Points Budget:
@@ -339,7 +209,6 @@ export default function ArmyBuilder() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* LEFT PANEL: available units */}
         <div className="w-1/3 overflow-y-auto border-r border-zinc-800 p-6">
           <h2 className="mb-4 text-xl font-bold">
             {factionKey === 'OFN'
@@ -367,7 +236,7 @@ export default function ArmyBuilder() {
                 </tr>
               </thead>
               <tbody>
-                {units.map((u, i) => (
+                {units.map((u) => (
                   <tr key={u.id} className="hover:bg-zinc-800/50">
                     <td className="border border-zinc-700 p-2">{u.name}</td>
                     <td className="border border-zinc-700 p-2">{u.category}</td>
@@ -389,7 +258,6 @@ export default function ArmyBuilder() {
           )}
         </div>
 
-        {/* RIGHT PANEL: army preview */}
         <div className="flex flex-1 flex-col bg-zinc-950 p-6">
           <h3 className="mb-2 text-lg font-semibold">Army Preview</h3>
           <div className="flex-1 overflow-y-auto">
@@ -399,7 +267,6 @@ export default function ArmyBuilder() {
               <ul className="space-y-3">
                 {sortedArmy.map((u, i) => (
                   <li key={`${u.id}-${i}`} className="border p-2">
-                    {/* Header */}
                     <div className="flex items-center justify-between">
                       <span className="font-medium">
                         {u.name} ({calculateUnitTotalPoints(u, i)} pts)
@@ -412,7 +279,6 @@ export default function ArmyBuilder() {
                       </button>
                     </div>
 
-                    {/* Extra Models Dropdown */}
                     {u.category !== 'Vehicle' &&
                       u.category !== 'HQ' &&
                       u.maxSize &&
@@ -430,7 +296,7 @@ export default function ArmyBuilder() {
                             className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
                           >
                             {Array.from(
-                              { length: u.maxSize - u.baseSize + 1 }, // +1 because dropdown includes 0
+                              { length: u.maxSize - u.baseSize + 1 },
                               (_, n) => n,
                             ).map((num) => (
                               <option key={num} value={num}>
@@ -441,34 +307,6 @@ export default function ArmyBuilder() {
                         </div>
                       )}
 
-                    {/* Specialist Weapon Dropdown */}
-                    {isSpecialistTeam(u) &&
-                    SPECIALIST_WEAPONS[factionKey]?.length ? (
-                      <div className="mt-2">
-                        <label className="mr-2 text-sm">
-                          Specialist Weapon:
-                        </label>
-                        <select
-                          value={specialistSelection[i] || ''}
-                          onChange={(e) =>
-                            setSpecialistSelection((prev) => ({
-                              ...prev,
-                              [i]: e.target.value,
-                            }))
-                          }
-                          className="rounded border bg-zinc-900 px-2 py-1 text-sm text-white"
-                        >
-                          <option value="">None</option>
-                          {SPECIALIST_WEAPONS[factionKey]?.map((w) => (
-                            <option key={w.name} value={w.name}>
-                              {w.name} (+{w.points})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    ) : null}
-
-                    {/* Unit Options Checkboxes */}
                     {u.availableOptions?.length ? (
                       <div className="mt-2 text-sm">
                         <span className="block font-medium">Options:</span>
@@ -512,7 +350,6 @@ export default function ArmyBuilder() {
                       </div>
                     ) : null}
 
-                    {/* Equipment / Special Rules */}
                     {u.equipment && (
                       <div className="mt-1 text-sm text-zinc-300">
                         Equipment:{' '}

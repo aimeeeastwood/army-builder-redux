@@ -1,18 +1,8 @@
-// server/routes/units.ts
 import { Router } from 'express'
-import knexConfig from '../db/knexfile.js'
-import knex from 'knex'
+import db from '../db/connection'
 
 const router = Router()
-const db = knex(knexConfig.development)
 
-const FACTION_IDS: Record<string, number> = {
-  OFN: 1,
-  CL: 2,
-}
-
-// GET /units
-// Optional query: ?faction=OFN or ?faction=CL
 router.get('/', async (req, res) => {
   const { faction } = req.query
 
@@ -20,12 +10,7 @@ router.get('/', async (req, res) => {
     let query = db('units').select('*')
 
     if (faction) {
-      const factionId = FACTION_IDS[String(faction).toUpperCase()]
-      if (!factionId) {
-        res.status(400).json({ error: `Unknown faction: ${faction}` })
-        return
-      }
-      query = query.where('faction_id', factionId)
+      query = query.where('faction', faction)
     }
 
     const units = await query
