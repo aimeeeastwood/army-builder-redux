@@ -5,8 +5,18 @@ import ofnIcon from '../assets/factions/ofn.png'
 import clIcon from '../assets/factions/cl.png'
 
 const FACTIONS = [
-  { key: 'OFN', name: 'Oceanic Federal Navy', image: ofnIcon },
-  { key: 'CL', name: 'Crusaders Of The Cleansing Light', image: clIcon },
+  {
+    key: 'OFN',
+    name: 'Oceanic Federal Navy',
+    image: ofnIcon,
+    className: 'h-56 w-56',
+  },
+  {
+    key: 'CL',
+    name: 'Crusaders Of The Cleansing Light',
+    image: clIcon,
+    className: 'h-40 w-40',
+  },
 ]
 
 const Factions = () => {
@@ -29,11 +39,13 @@ const Factions = () => {
             onClick={() => selectFaction(faction.key)}
             className="group flex cursor-pointer flex-col items-center transition-transform duration-300 hover:scale-105"
           >
-            <img
-              src={faction.image}
-              alt={faction.name}
-              className="mb-6 h-40 w-40 object-contain"
-            />
+            <div className="mb-6 flex h-56 w-56 items-center justify-center">
+              <img
+                src={faction.image}
+                alt={faction.name}
+                className="max-h-full max-w-full object-contain"
+              />
+            </div>
 
             <span className="max-w-xs text-center text-lg transition-colors group-hover:text-zinc-400">
               {faction.name}

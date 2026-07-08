@@ -2,13 +2,14 @@ import { Outlet } from 'react-router-dom'
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <header className="border-b border-zinc-800 bg-zinc-950 p-4">
-        <h1 className="text-3xl font-bold">Kairos Army Builder</h1>
-        <p className="text-sm text-zinc-400">Demon Kitty Games • 2061</p>
+    <div className="flex flex-col items-center">
+      <header className="border-b border-zinc-800 p-6">
+        <h1 className="text-center text-4xl font-bold tracking-wide">
+          Kairos: The Fulcrum Wars
+        </h1>
       </header>
 
-      <main>
+      <main className="flex flex-1 items-center justify-center">
         <Outlet />
       </main>
 
