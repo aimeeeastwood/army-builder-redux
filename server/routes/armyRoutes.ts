@@ -1,10 +1,10 @@
-import { Router, Request, Response } from 'express'
+import { Router } from 'express';
+import db from '../db/connection'
 
-const router = Router()
+const router = Router();
 
-// Example endpoint
-router.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Army list endpoint working!' })
-})
+router.get('/', (req, res) => {
+  res.json({ message: 'Army list endpoint working!' });
+});
 
-export default router
+export default router;

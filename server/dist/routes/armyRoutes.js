@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = require("express");
 var router = (0, express_1.Router)();
-// Example endpoint
 router.get('/', function (req, res) {
     res.json({ message: 'Army list endpoint working!' });
 });

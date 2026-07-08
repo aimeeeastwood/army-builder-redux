@@ -1,5 +1,5 @@
 // client/routes.tsx
-import { RouteObject } from 'react-router'
+import { RouteObject } from 'react-router-dom'
 import Layout from './src/components/Layout'
 import Factions from './src/components/Factions'
 import ArmyBuilder from './src/components/ArmyBuilder'

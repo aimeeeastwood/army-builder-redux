@@ -2,18 +2,19 @@ import { Outlet } from 'react-router-dom'
 
 export default function Layout() {
   return (
-    <>
-      <header className="p-4 bg-gray-800 text-white">
-        <h1 className="text-2xl font-bold">Army Builder</h1>
+    <div className="min-h-screen bg-black text-white">
+      <header className="border-b border-zinc-800 bg-zinc-950 p-4">
+        <h1 className="text-3xl font-bold">Kairos Army Builder</h1>
+        <p className="text-sm text-zinc-400">Demon Kitty Games • 2061</p>
       </header>
 
-      <main className="p-4">
+      <main>
         <Outlet />
       </main>
 
-      <footer className="p-4 text-center text-gray-500">
+      <footer className="border-t border-zinc-800 p-4 text-center text-sm text-zinc-500">
         © 2061 Demon Kitty Games
       </footer>
-    </>
+    </div>
   )
 }
