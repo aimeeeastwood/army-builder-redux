@@ -9,13 +9,13 @@ const FACTIONS = [
     key: 'OFN',
     name: 'Oceanic Federal Navy',
     image: ofnIcon,
-    className: 'h-56 w-56',
+    className: 'font-ofn',
   },
   {
     key: 'CL',
     name: 'Crusaders Of The Cleansing Light',
     image: clIcon,
-    className: 'h-40 w-40',
+    className: 'font-cl',
   },
 ]
 
@@ -27,7 +27,7 @@ const Factions = () => {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
+    <div className="flex flex-col items-center justify-center text-white">
       <h1 className="mb-16 text-4xl font-bold tracking-wide">
         Kairos: The Fulcrum Wars
       </h1>
@@ -47,7 +47,9 @@ const Factions = () => {
               />
             </div>
 
-            <span className="max-w-xs text-center text-lg transition-colors group-hover:text-zinc-400">
+            <span
+              className={`max-w-xs text-center text-lg transition-colors group-hover:text-zinc-400 ${faction.className}`}
+            >
               {faction.name}
             </span>
           </div>

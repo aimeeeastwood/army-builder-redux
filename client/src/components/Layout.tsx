@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom'
 
 export default function Layout() {
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex min-h-screen flex-col bg-zinc-950 text-white">
       <header className="border-b border-zinc-800 p-6">
         <h1 className="text-center text-4xl font-bold tracking-wide">
           Kairos: The Fulcrum Wars
