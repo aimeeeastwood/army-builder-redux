@@ -1,14 +1,29 @@
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
 export async function seed(knex: Knex) {
-  await knex('unit_options').whereIn('unit_id', knex('units').select('id').where({ faction_id: 2 })).del()
-  await knex('units').where({ faction_id: 2 }).del()
+  const clFaction = await knex('factions').where({ key: 'CL' }).first()
+
+  if (!clFaction) {
+    throw new Error('CL faction not found')
+  }
+
+  const factionId = clFaction.id
+  await knex('unit_options')
+    .whereIn(
+      'unit_id',
+      knex('units').select('id').where({ faction_id: factionId }),
+    )
+    .del()
+
+  await knex('units').where({ faction_id: factionId }).del()
+
+  await knex('units').where({ faction_id: factionId }).del()
 
   const units = [
     // HQ
     {
       name: 'Crusader Clergy Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'HQ',
       base_size: 5,
       max_size: 5,
@@ -31,7 +46,7 @@ export async function seed(knex: Knex) {
     // Troops
     {
       name: 'Crusader Rifle Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Troop',
       base_size: 5,
       max_size: 10,
@@ -52,7 +67,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Crusader Specialist Team',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Troop',
       base_size: 3,
       max_size: 3,
@@ -76,7 +91,7 @@ export async function seed(knex: Knex) {
     // Elite
     {
       name: 'Crusader Zealot Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 5,
       max_size: 15,
@@ -94,7 +109,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Enhanced Crusader Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 3,
       max_size: 5,
@@ -107,11 +122,12 @@ export async function seed(knex: Knex) {
       wip: 9,
       mov: '6-2',
       equipment: 'QBZ-100 Bullpup, Crusader Greatswords',
-      special_rules: 'Infantry, Fanatic, Zealot, Hackable, Flurry Of Blades (2)',
+      special_rules:
+        'Infantry, Fanatic, Zealot, Hackable, Flurry Of Blades (2)',
     },
     {
       name: 'Crusader Assassin Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 3,
       max_size: 5,
@@ -124,12 +140,13 @@ export async function seed(knex: Knex) {
       wip: 10,
       mov: '6-2',
       equipment: 'Heavy Pistols, Poison Daggers, Optical Camo',
-      special_rules: 'Infantry, Fanatic, Superior Infiltrators, Ambushers, Flurry Of Blades (2)',
+      special_rules:
+        'Infantry, Fanatic, Superior Infiltrators, Ambushers, Flurry Of Blades (2)',
     },
     // Drones
     {
       name: 'Tarantula Drone Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 3,
       max_size: 6,
@@ -146,7 +163,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Locust Drone Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 3,
       max_size: 6,
@@ -163,7 +180,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Berserker Drone Squad',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 5,
       max_size: 10,
@@ -181,7 +198,7 @@ export async function seed(knex: Knex) {
     // Vehicles
     {
       name: 'Ezekiel Light Mech',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Vehicle',
       points: 92,
       cc: 3,
@@ -200,7 +217,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Goliath Heavy Mech',
-      faction_id: 2,
+      faction_id: factionId,
       category: 'Vehicle',
       points: 110,
       cc: 3,
@@ -224,7 +241,10 @@ export async function seed(knex: Knex) {
     const [unitId] = await knex('units').insert(unitData)
 
     if (options && options.length > 0) {
-      const optionsWithUnitId = options.map((opt) => ({ ...opt, unit_id: unitId }))
+      const optionsWithUnitId = options.map((opt) => ({
+        ...opt,
+        unit_id: unitId,
+      }))
       await knex('unit_options').insert(optionsWithUnitId)
     }
   }

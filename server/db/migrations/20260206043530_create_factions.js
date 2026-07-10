@@ -1,6 +1,7 @@
 export function up(knex) {
   return knex.schema.createTable('factions', (table) => {
     table.increments('id')
+    table.string('key').unique()
     table.string('name')
   })
 }

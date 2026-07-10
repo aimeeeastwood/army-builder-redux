@@ -61,20 +61,29 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.seed = seed;
 function seed(knex) {
     return __awaiter(this, void 0, void 0, function () {
-        var units, _loop_1, _i, units_1, unit;
+        var ofnFaction, factionId, units, _loop_1, _i, units_1, unit;
         return __generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, knex('unit_options').whereIn('unit_id', knex('units').select('id').where({ faction_id: 1 })).del()];
+                case 0: return [4 /*yield*/, knex('factions').where({ key: 'OFN' }).first()];
                 case 1:
+                    ofnFaction = _a.sent();
+                    if (!ofnFaction) {
+                        throw new Error('OFN faction not found');
+                    }
+                    factionId = ofnFaction.id;
+                    return [4 /*yield*/, knex('unit_options')
+                            .whereIn('unit_id', knex('units').select('id').where({ faction_id: factionId }))
+                            .del()];
+                case 2:
                     _a.sent();
                     return [4 /*yield*/, knex('units').where({ faction_id: 1 }).del()];
-                case 2:
+                case 3:
                     _a.sent();
                     units = [
                         // HQ
                         {
                             name: 'Marine Command Squad',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'HQ',
                             base_size: 5,
                             max_size: 5,
@@ -97,7 +106,7 @@ function seed(knex) {
                         // Troop
                         {
                             name: 'Marine Rifle Squad',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Troop',
                             base_size: 5,
                             max_size: 10,
@@ -119,7 +128,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Marine Specialist Team',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Troop',
                             base_size: 3,
                             max_size: 3,
@@ -143,7 +152,7 @@ function seed(knex) {
                         // Elite
                         {
                             name: 'Marine Airborne Team',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Elite',
                             base_size: 5,
                             max_size: 10,
@@ -161,7 +170,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Exo-Marine Squad',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Elite',
                             base_size: 3,
                             max_size: 5,
@@ -178,7 +187,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Envoy Ranger Squad',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Elite',
                             base_size: 3,
                             max_size: 5,
@@ -196,7 +205,7 @@ function seed(knex) {
                         // Drones
                         {
                             name: 'Trilobite Scout Drone',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Drone',
                             base_size: 3,
                             max_size: 6,
@@ -213,7 +222,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Barracuda Attack Drone',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Drone',
                             base_size: 3,
                             max_size: 6,
@@ -230,7 +239,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Vanguard Infantry Drone',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Drone',
                             base_size: 5,
                             max_size: 10,
@@ -248,7 +257,7 @@ function seed(knex) {
                         // Vehicles
                         {
                             name: 'Carrowary Light Support Mech',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Vehicle',
                             points: 115,
                             cc: 2,
@@ -267,7 +276,7 @@ function seed(knex) {
                         },
                         {
                             name: 'Stingray Mech Destroyer',
-                            faction_id: 1,
+                            faction_id: factionId,
                             category: 'Vehicle',
                             points: 105,
                             cc: 0,
@@ -305,18 +314,18 @@ function seed(knex) {
                         });
                     };
                     _i = 0, units_1 = units;
-                    _a.label = 3;
-                case 3:
-                    if (!(_i < units_1.length)) return [3 /*break*/, 6];
+                    _a.label = 4;
+                case 4:
+                    if (!(_i < units_1.length)) return [3 /*break*/, 7];
                     unit = units_1[_i];
                     return [5 /*yield**/, _loop_1(unit)];
-                case 4:
-                    _a.sent();
-                    _a.label = 5;
                 case 5:
+                    _a.sent();
+                    _a.label = 6;
+                case 6:
                     _i++;
-                    return [3 /*break*/, 3];
-                case 6: return [2 /*return*/];
+                    return [3 /*break*/, 4];
+                case 7: return [2 /*return*/];
             }
         });
     });

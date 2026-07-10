@@ -1,14 +1,29 @@
-import { Knex } from 'knex'
+import type { Knex } from 'knex'
 
 export async function seed(knex: Knex) {
-  await knex('unit_options').whereIn('unit_id', knex('units').select('id').where({ faction_id: 1 })).del()
-  await knex('units').where({ faction_id: 1 }).del()
+  const ofnFaction = await knex('factions').where({ key: 'OFN' }).first()
+
+  if (!ofnFaction) {
+    throw new Error('OFN faction not found')
+  }
+
+  const factionId = ofnFaction.id
+  await knex('unit_options')
+    .whereIn(
+      'unit_id',
+      knex('units').select('id').where({ faction_id: factionId }),
+    )
+    .del()
+
+  await knex('units').where({ faction_id: factionId }).del()
+
+  await knex('units').where({ faction_id: factionId }).del()
 
   const units = [
     // HQ
     {
       name: 'Marine Command Squad',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'HQ',
       base_size: 5,
       max_size: 5,
@@ -31,7 +46,7 @@ export async function seed(knex: Knex) {
     // Troop
     {
       name: 'Marine Rifle Squad',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Troop',
       base_size: 5,
       max_size: 10,
@@ -53,7 +68,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Marine Specialist Team',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Troop',
       base_size: 3,
       max_size: 3,
@@ -77,7 +92,7 @@ export async function seed(knex: Knex) {
     // Elite
     {
       name: 'Marine Airborne Team',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 5,
       max_size: 10,
@@ -95,7 +110,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Exo-Marine Squad',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 3,
       max_size: 5,
@@ -112,7 +127,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Envoy Ranger Squad',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Elite',
       base_size: 3,
       max_size: 5,
@@ -124,13 +139,15 @@ export async function seed(knex: Knex) {
       w: 1,
       wip: 10,
       mov: '6-2',
-      equipment: 'Smart Sniper Rifles, Heavy Pistols, Shitachi, Adaptive Camo, Infra-Red Sensors, Explosive Charges, Targeting Laser',
-      special_rules: 'Infantry, Navy, Infiltrators, Ambushers, Flurry Of Blades (3)',
+      equipment:
+        'Smart Sniper Rifles, Heavy Pistols, Shitachi, Adaptive Camo, Infra-Red Sensors, Explosive Charges, Targeting Laser',
+      special_rules:
+        'Infantry, Navy, Infiltrators, Ambushers, Flurry Of Blades (3)',
     },
     // Drones
     {
       name: 'Trilobite Scout Drone',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 3,
       max_size: 6,
@@ -147,7 +164,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Barracuda Attack Drone',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 3,
       max_size: 6,
@@ -164,7 +181,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Vanguard Infantry Drone',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Drone',
       base_size: 5,
       max_size: 10,
@@ -182,7 +199,7 @@ export async function seed(knex: Knex) {
     // Vehicles
     {
       name: 'Carrowary Light Support Mech',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Vehicle',
       points: 115,
       cc: 2,
@@ -193,7 +210,8 @@ export async function seed(knex: Knex) {
       str: 3,
       wip: 9,
       mov: '6-4',
-      equipment: '75mm Cannon, Guided Missile Pod, 25mm Gatling Cannon, Adaptive Camo, Mech Foot',
+      equipment:
+        '75mm Cannon, Guided Missile Pod, 25mm Gatling Cannon, Adaptive Camo, Mech Foot',
       special_rules: 'Walker, Navy, Turret, Hackable',
       f: 10,
       s: 10,
@@ -201,7 +219,7 @@ export async function seed(knex: Knex) {
     },
     {
       name: 'Stingray Mech Destroyer',
-      faction_id: 1,
+      faction_id: factionId,
       category: 'Vehicle',
       points: 105,
       cc: 0,
@@ -225,7 +243,10 @@ export async function seed(knex: Knex) {
     const [unitId] = await knex('units').insert(unitData)
 
     if (options && options.length > 0) {
-      const optionsWithUnitId = options.map((opt) => ({ ...opt, unit_id: unitId }))
+      const optionsWithUnitId = options.map((opt) => ({
+        ...opt,
+        unit_id: unitId,
+      }))
       await knex('unit_options').insert(optionsWithUnitId)
     }
   }

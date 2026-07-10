@@ -76,8 +76,11 @@ function seed(knex) {
                             .del()];
                 case 2:
                     _a.sent();
-                    return [4 /*yield*/, knex('units').where({ faction_id: 2 }).del()];
+                    return [4 /*yield*/, knex('units').where({ faction_id: factionId }).del()];
                 case 3:
+                    _a.sent();
+                    return [4 /*yield*/, knex('units').where({ faction_id: factionId }).del()];
+                case 4:
                     _a.sent();
                     units = [
                         // HQ
@@ -313,18 +316,18 @@ function seed(knex) {
                         });
                     };
                     _i = 0, units_1 = units;
-                    _a.label = 4;
-                case 4:
-                    if (!(_i < units_1.length)) return [3 /*break*/, 7];
+                    _a.label = 5;
+                case 5:
+                    if (!(_i < units_1.length)) return [3 /*break*/, 8];
                     unit = units_1[_i];
                     return [5 /*yield**/, _loop_1(unit)];
-                case 5:
-                    _a.sent();
-                    _a.label = 6;
                 case 6:
+                    _a.sent();
+                    _a.label = 7;
+                case 7:
                     _i++;
-                    return [3 /*break*/, 4];
-                case 7: return [2 /*return*/];
+                    return [3 /*break*/, 5];
+                case 8: return [2 /*return*/];
             }
         });
     });

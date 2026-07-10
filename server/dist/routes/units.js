@@ -51,9 +51,11 @@ router.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                query = (0, connection_1.default)('units').select('*');
+                query = (0, connection_1.default)('units')
+                    .join('factions', 'units.faction_id', 'factions.id')
+                    .select('units.*', 'factions.name as faction');
                 if (faction) {
-                    query = query.where('faction', faction);
+                    query = query.where('factions.name', faction);
                 }
                 return [4 /*yield*/, query];
             case 2:

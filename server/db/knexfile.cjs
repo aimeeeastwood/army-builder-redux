@@ -1,9 +1,8 @@
-import type { Knex } from 'knex'
-import path from 'path'
+const path = require('path')
 
-const dbPath = path.resolve(process.cwd(), 'server/dev.sqlite3')
+const dbPath = path.resolve(__dirname, '../dev.sqlite3')
 
-const config: Record<string, Knex.Config> = {
+module.exports = {
   development: {
     client: 'sqlite3',
     connection: {
@@ -11,7 +10,7 @@ const config: Record<string, Knex.Config> = {
     },
     useNullAsDefault: true,
     pool: {
-      afterCreate: (conn: any, cb: (err?: Error | null) => void) => {
+      afterCreate: (conn, cb) => {
         conn.run('PRAGMA foreign_keys = ON', cb)
       },
     },
@@ -33,5 +32,3 @@ const config: Record<string, Knex.Config> = {
     useNullAsDefault: true,
   },
 }
-
-export default config
