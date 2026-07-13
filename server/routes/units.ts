@@ -9,13 +9,47 @@ router.get('/', async (req, res) => {
   try {
     let query = db('units')
       .join('factions', 'units.faction_id', 'factions.id')
-      .select('units.*', 'factions.name as faction')
+      .select(
+        'units.id',
+        'units.name',
+        'units.category',
+        'units.cc',
+        'units.bs',
+        'units.de',
+        'units.fw',
+        'units.w',
+        'units.wip',
+        'units.str',
+        'units.mov',
+        'units.base_size as baseSize',
+        'units.max_size as maxSize',
+        'units.cost_per_model as costPerModel',
+        'units.points',
+        'units.f',
+        'units.s',
+        'units.r',
+        'units.equipment',
+        'units.special_rules as specialRules',
+        'factions.name as faction',
+      )
 
     if (faction) {
-      query = query.where('factions.name', faction)
+      query = query.where('factions.key', faction)
     }
 
     const units = await query
+    const unitsWithOptions = await Promise.all(
+      units.map(async (unit) => {
+        const options = await db('unit_options').where({ unit_id: unit.id })
+
+        return {
+          ...unit,
+          availableOptions: options,
+        }
+      }),
+    )
+
+    res.json(unitsWithOptions)
     res.json(units)
   } catch (error) {
     console.error('Error fetching units:', error)

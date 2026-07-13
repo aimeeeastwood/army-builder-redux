@@ -116,8 +116,7 @@ export default function ArmyBuilder() {
   // Sorted army by category
   const sortedArmy = [...army].sort(
     (a, b) =>
-      CATEGORY_ORDER.indexOf(a.category) -
-      CATEGORY_ORDER.indexOf(b.category),
+      CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category),
   )
 
   const exportPDF = () => {
@@ -135,16 +134,16 @@ export default function ArmyBuilder() {
       doc.setFontSize(10)
       doc.text(`Category: ${u.category}`, 12, y)
       y += 5
-      
+
       const stats = `CC: ${u.cc}, BS: ${u.bs}, DE: ${u.de}, FW: ${u.fw}, ${u.category === 'Vehicle' ? 'STR: ' + u.str : 'W: ' + u.w}, WIP: ${u.wip}, MOV: ${u.mov}`
       doc.text(stats, 12, y)
       y += 5
-      
+
       if (u.category === 'Vehicle') {
         doc.text(`F/S/R: ${u.f}/${u.s}/${u.r}`, 12, y)
         y += 5
       }
-      
+
       if (unitExtraModels[i]) {
         doc.text(`Extra Models: ${unitExtraModels[i]}`, 12, y)
         y += 5
@@ -209,7 +208,7 @@ export default function ArmyBuilder() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-1/3 overflow-y-auto border-r border-zinc-800 p-6">
+        <div className="w-2/5 overflow-y-auto border-r border-zinc-800 p-6">
           <h2 className="mb-4 text-xl font-bold">
             {factionKey === 'OFN'
               ? 'Oceanic Federal Navy Force'

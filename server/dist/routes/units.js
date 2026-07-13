@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -43,31 +54,45 @@ var express_1 = require("express");
 var connection_1 = __importDefault(require("../db/connection"));
 var router = (0, express_1.Router)();
 router.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var faction, query, units, error_1;
+    var faction, query, units, unitsWithOptions, error_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 faction = req.query.faction;
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, , 4]);
+                _a.trys.push([1, 4, , 5]);
                 query = (0, connection_1.default)('units')
                     .join('factions', 'units.faction_id', 'factions.id')
-                    .select('units.*', 'factions.name as faction');
+                    .select('units.id', 'units.name', 'units.category', 'units.cc', 'units.bs', 'units.de', 'units.fw', 'units.w', 'units.wip', 'units.str', 'units.mov', 'units.base_size as baseSize', 'units.max_size as maxSize', 'units.cost_per_model as costPerModel', 'units.points', 'units.f', 'units.s', 'units.r', 'units.equipment', 'units.special_rules as specialRules', 'factions.name as faction');
                 if (faction) {
-                    query = query.where('factions.name', faction);
+                    query = query.where('factions.key', faction);
                 }
                 return [4 /*yield*/, query];
             case 2:
                 units = _a.sent();
-                res.json(units);
-                return [3 /*break*/, 4];
+                return [4 /*yield*/, Promise.all(units.map(function (unit) { return __awaiter(void 0, void 0, void 0, function () {
+                        var options;
+                        return __generator(this, function (_a) {
+                            switch (_a.label) {
+                                case 0: return [4 /*yield*/, (0, connection_1.default)('unit_options').where({ unit_id: unit.id })];
+                                case 1:
+                                    options = _a.sent();
+                                    return [2 /*return*/, __assign(__assign({}, unit), { availableOptions: options })];
+                            }
+                        });
+                    }); }))];
             case 3:
+                unitsWithOptions = _a.sent();
+                res.json(unitsWithOptions);
+                res.json(units);
+                return [3 /*break*/, 5];
+            case 4:
                 error_1 = _a.sent();
                 console.error('Error fetching units:', error_1);
                 res.status(500).json({ error: 'Failed to fetch units' });
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); });

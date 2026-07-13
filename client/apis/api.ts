@@ -10,6 +10,9 @@ export async function getUnits(faction?: Faction): Promise<UnitTemplate[]> {
     ? `${BASE_URL}/units?faction=${faction}`
     : `${BASE_URL}/units`
   const res = await request.get(url)
+
+  console.log('API units:', res.body)
+
   return res.body as UnitTemplate[]
 }
 
