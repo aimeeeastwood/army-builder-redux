@@ -38,6 +38,7 @@ router.get('/', async (req, res) => {
     }
 
     const units = await query
+
     const unitsWithOptions = await Promise.all(
       units.map(async (unit) => {
         const options = await db('unit_options').where({ unit_id: unit.id })
@@ -50,7 +51,6 @@ router.get('/', async (req, res) => {
     )
 
     res.json(unitsWithOptions)
-    res.json(units)
   } catch (error) {
     console.error('Error fetching units:', error)
     res.status(500).json({ error: 'Failed to fetch units' })

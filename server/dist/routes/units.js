@@ -85,7 +85,6 @@ router.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, f
             case 3:
                 unitsWithOptions = _a.sent();
                 res.json(unitsWithOptions);
-                res.json(units);
                 return [3 /*break*/, 5];
             case 4:
                 error_1 = _a.sent();
