@@ -23,6 +23,12 @@ const CATEGORY_ORDER: UnitCategory[] = [
 const isSpecialistTeam = (unit: UnitTemplate) =>
   unit.name.includes('Specialist Team')
 
+const hasSpecialRule = (unit: UnitTemplate, rule: string) =>
+  unit.special_rules
+    ?.split(',')
+    .map((r) => r.trim())
+    .includes(rule)
+
 export default function ArmyBuilder() {
   const { faction } = useParams<{ faction: string }>()
   if (!faction) return <p>No faction selected.</p>
@@ -92,10 +98,23 @@ export default function ArmyBuilder() {
 
   const addUnit = (unit: UnitTemplate) => {
     const unitPts = calculateUnitTotalPoints(unit, army.length)
+
     if (totalPoints + unitPts > pointsBudget) {
       alert(`Cannot add ${unit.name}: would exceed ${pointsBudget} pts limit`)
       return
     }
+
+    if (isSpecialistTeam(unit)) {
+      const coreUnits = army.filter((u) => hasSpecialRule(u, 'Core')).length
+
+      const specialistTeams = army.filter((u) => isSpecialistTeam(u)).length
+
+      if (specialistTeams >= coreUnits) {
+        alert('Cannot add Specialist Team: requires a Core unit')
+        return
+      }
+    }
+
     setArmy((prev) => [...prev, unit])
   }
 

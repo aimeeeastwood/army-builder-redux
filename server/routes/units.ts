@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
         'units.s',
         'units.r',
         'units.equipment',
-        'units.special_rules as specialRules',
+        'units.special_rules',
         'factions.name as faction',
       )
 

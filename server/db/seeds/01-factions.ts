@@ -1,6 +1,6 @@
 import type { Knex } from 'knex'
 
-export async function seed(knex) {
+export async function seed(knex: Knex) {
   await knex('factions').del()
 
   await knex('factions').insert([
