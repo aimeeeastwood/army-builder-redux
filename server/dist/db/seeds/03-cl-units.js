@@ -122,7 +122,7 @@ function seed(knex) {
                             wip: 8,
                             mov: '4-4',
                             equipment: 'QBZ-110 Bullpup, Grenades',
-                            special_rules: 'Infantry, Fanatic',
+                            special_rules: 'Infantry, Fanatic, Core',
                             options: [
                                 { name: 'LMG', points: 3 },
                                 { name: 'Priest', points: 2 },

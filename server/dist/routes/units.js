@@ -64,7 +64,7 @@ router.get('/', function (req, res) { return __awaiter(void 0, void 0, void 0, f
                 _a.trys.push([1, 4, , 5]);
                 query = (0, connection_1.default)('units')
                     .join('factions', 'units.faction_id', 'factions.id')
-                    .select('units.id', 'units.name', 'units.category', 'units.cc', 'units.bs', 'units.de', 'units.fw', 'units.w', 'units.wip', 'units.str', 'units.mov', 'units.base_size as baseSize', 'units.max_size as maxSize', 'units.cost_per_model as costPerModel', 'units.points', 'units.f', 'units.s', 'units.r', 'units.equipment', 'units.special_rules as specialRules', 'factions.name as faction');
+                    .select('units.id', 'units.name', 'units.category', 'units.cc', 'units.bs', 'units.de', 'units.fw', 'units.w', 'units.wip', 'units.str', 'units.mov', 'units.base_size as baseSize', 'units.max_size as maxSize', 'units.cost_per_model as costPerModel', 'units.points', 'units.f', 'units.s', 'units.r', 'units.equipment', 'units.special_rules', 'factions.name as faction');
                 if (faction) {
                     query = query.where('factions.key', faction);
                 }

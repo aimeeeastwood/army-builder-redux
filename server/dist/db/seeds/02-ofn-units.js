@@ -122,7 +122,7 @@ function seed(knex) {
                             wip: 10,
                             mov: '4-4',
                             equipment: 'M-10 Smart Carbine, Grenades, Adaptive Camo',
-                            special_rules: 'Infantry, Navy',
+                            special_rules: 'Infantry, Navy, Core',
                             options: [
                                 { name: 'LMG', points: 3 },
                                 { name: 'Medic', points: 2 },
