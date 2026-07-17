@@ -5,6 +5,7 @@ An online app for making a force in the Tabletop game , Kairos: The Fulcrum Wars
 Current Factions
 
 -Oceanic Federal Navy
+
 -Crusaders Of The Cleansing Light
 
 WIP more to come as factions added and rules change.
